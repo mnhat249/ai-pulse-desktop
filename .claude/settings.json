@@ -1,0 +1,37 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(ruff:*)", "Bash(mypy:*)", "Bash(pytest:*)",
+      "Bash(python scripts/check.py)", "Bash(git status:*)", "Bash(git diff:*)",
+      "Bash(git log:*)", "Bash(git worktree list)"
+    ],
+    "ask": [
+      "Bash(git push:*)", "Bash(git reset --hard:*)", "Bash(git clean:*)",
+      "Bash(git worktree remove:*)", "Bash(gh pr merge:*)", "Bash(gh release:*)",
+      "Bash(gh repo delete:*)", "Bash(rm:*)", "Bash(del:*)", "Bash(rmdir:*)",
+      "Bash(Remove-Item:*)", "Bash(pip install:*)"
+    ],
+    "deny": [
+      "Read(./.env)", "Read(./.env.*)", "Read(./playwright/.auth/**)",
+      "Bash(rm -rf /:*)", "Bash(curl:*|*sh)"
+    ]
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          { "type": "command", "command": "python \"$CLAUDE_PROJECT_DIR/.claude/hooks/format_on_edit.py\"" }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          { "type": "command", "command": "python \"$CLAUDE_PROJECT_DIR/.claude/hooks/pre_commit_guard.py\"" }
+        ]
+      }
+    ]
+  }
+}

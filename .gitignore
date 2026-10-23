@@ -1,0 +1,12 @@
+.env
+__pycache__/
+*.pyc
+.venv/
+venv/
+*.db
+*.sqlite3
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+playwright/.auth/
+.claude/settings.local.json
