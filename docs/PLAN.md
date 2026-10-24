@@ -19,7 +19,11 @@ Chú giải: `[x]` xong và đã kiểm (test/chạy thật) · `[~]` code đã 
 | 4. Thêm nguồn | Xong code | Đạt (bằng test) | RSS (AINews, HF blog, OpenAI, DeepMind, Google AI) và Bluesky; thêm nguồn không phải sửa `pipeline/` hay `ui/` (có test giữ điều này). Reddit bỏ vì chưa có đơn duyệt; sổ `x-missed.md` cần bạn ghi 2 tuần |
 | 5. Hoàn thiện | Xong code | Chưa đạt | Đóng gói `.exe`, shortcut Startup, dọn dữ liệu + sao lưu + VACUUM, màn hình cài đặt, README. Chưa thử cài và chạy trên máy Windows sạch *(cần bạn; thử bằng Windows Sandbox)* |
 
-Code MVP (giai đoạn 0–3) đã xong; `python scripts/check.py` xanh với 280 test. Chưa commit: toàn bộ thay đổi đang nằm trong worktree `mvp` (nhánh `worktree-mvp`); hook pre-commit đang bị chặn vì Python msys thiếu ruff.
+Code của cả 6 giai đoạn đã xong; `python scripts/check.py` xanh với 400 test. Giai đoạn 0–3 vào `main` qua PR #1, giai đoạn 4–5 qua PR #2. Các bản sửa sau đó (thang độ nóng, adapter bỏ phần tử hỏng, CI, khóa phiên bản, cửa sổ Cài đặt) nằm trên nhánh `feat/phase-4-5`, chờ PR #3.
+
+Đang làm, mỗi việc một nhánh riêng: lệnh `app.cli metrics` / `doctor` + test `serve` (`feat/metrics-doctor`), nhớ trạng thái tạm ngưng nguồn qua lần khởi động lại (`worktree-restore-source-state`), quota LLM theo múi giờ (`feat/quota-timezone`), widget làm mới từng phần (`feat/widget-card-refresh`).
+
+Còn chặn các cổng: chưa có khóa Gemini/Groq/GitHub, chưa tải model fastembed, chưa gán nhãn (150–200 cặp, 50 tin), chưa chạy dài và chưa dùng thật *(cần bạn)*. CI: `.github/workflows/check.yml` (Windows, `scripts/check.py` + gitleaks toàn lịch sử).
 
 ---
 
