@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Chạy toàn bộ kiểm tra chất lượng. Exit 0 = đạt, khác 0 = không đạt."""
+
 from __future__ import annotations
 
 import importlib.util
@@ -23,10 +24,15 @@ FORBIDDEN_SUFFIXES = (".db", ".sqlite3")
 
 def run(name: str, module: str, args: list[str]) -> bool:
     if importlib.util.find_spec(module) is None:
-        print(f"[FAIL] {name}: chưa cài '{module}'. Chạy: pip install -r requirements-dev.txt")
+        print(f"[FAIL] {name}: chưa cài '{module}'. Chạy: pip install -e '.[dev]'")
         return False
     proc = subprocess.run(
-        [sys.executable, "-m", module, *args], cwd=ROOT, capture_output=True, text=True
+        [sys.executable, "-m", module, *args],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        errors="replace",
     )
     if name == "pytest" and proc.returncode == 5:  # chưa có test nào
         print("[WARN] pytest: chưa có test nào")
@@ -41,7 +47,9 @@ def run(name: str, module: str, args: list[str]) -> bool:
 def staged_files() -> list[Path]:
     proc = subprocess.run(
         ["git", "diff", "--cached", "--name-only", "--diff-filter=ACM"],
-        cwd=ROOT, capture_output=True, text=True,
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
     )
     if proc.returncode != 0:
         return []
@@ -72,12 +80,13 @@ def scan_secrets() -> bool:
 
 
 def main() -> int:
+    sys.stdout.reconfigure(encoding="utf-8")  # type: ignore[attr-defined]
     results = [
         run("ruff format", "ruff", ["format", "--check", "."]),
         run("ruff lint", "ruff", ["check", "."]),
     ]
-    if (ROOT / "src").exists():
-        results.append(run("mypy", "mypy", ["src"]))
+    if (ROOT / "app").exists():
+        results.append(run("mypy", "mypy", ["app"]))
     results.append(run("pytest", "pytest", ["-q"]))
     results.append(scan_secrets())
     return 0 if all(results) else 1

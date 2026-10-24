@@ -4,9 +4,21 @@ __pycache__/
 .venv/
 venv/
 *.db
+*.db-wal
+*.db-shm
 *.sqlite3
 .mypy_cache/
 .ruff_cache/
 .pytest_cache/
+*.egg-info/
 playwright/.auth/
-.claude/settings.local.json
+storageState*.json
+local_plugins/
+dist/
+build/
+logs/
+.tmp-home/
+
+# Cấu hình và công cụ của Claude Code: giữ trên máy, không đưa vào repo
+.claude/
+CLAUDE.md

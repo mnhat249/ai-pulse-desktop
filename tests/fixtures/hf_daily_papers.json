@@ -1,0 +1,318 @@
+[
+ {
+  "paper": {
+   "id": "2610.28950",
+   "authors": [
+    {
+     "_id": "6adb83ea121a70fc68345820",
+     "name": "Jonas Eschmann",
+     "hidden": false
+    },
+    {
+     "_id": "6adb83ea121a70fc68345821",
+     "name": "Giuseppe Loianno",
+     "hidden": false
+    }
+   ],
+   "mediaUrls": [
+    "https://cdn-uploads.huggingface.co/production/uploads/64a011bd343399711c7057ad/1j--xS1ZtNNLS601akop_.mp4"
+   ],
+   "publishedAt": "2026-10-20T00:00:00.000Z",
+   "submittedOnDailyAt": "2026-10-23T00:00:00.000Z",
+   "title": "HyperDrone: Simulation-to-Reality Transfer at Millions of Frames per Second",
+   "submittedOnDailyBy": {
+    "_id": "64a011bd343399711c7057ad",
+    "avatarUrl": "/avatars/ba09009f6ae9208ad084bf13135e85e2.svg",
+    "isPro": false,
+    "fullname": "Jonas Eschmann",
+    "user": "jonas-eschmann",
+    "type": "user",
+    "name": "jonas-eschmann"
+   },
+   "summary": "We present HyperDrone, an extremely fast quadrotor simulator focused on high-performance batch rendering that is more than 20x faster than existing state-of-the-art batch quadrotor simulators. HyperDrone combines highly optimized multirotor dynamics with HyperLux, a new ray-tracing engine that supports Nvidia OptiX, Vulkan, Apple Metal and WebGPU backends that takes full advantage of modern ray-tracing hardware, capable of running both components entirely on the GPU. HyperLux renders RGB, depth, semantic/instance segmentation, surface normals and optical flow observations at configurable levels of fidelity, including reflections, realistic lighting, motion blur, anti-aliasing, and Physically Based Rendering (PBR). Even in the highest-fidelity settings, HyperLux achieves millions of Frames Per Second (FPS) on consumer-grade GPUs while rendering realistic 3D scenes. We demonstrate the merits of HyperDrone by training a vision-based yaw-control policy purely in simulation and transferring it to a real small-scale quadrotor (Crazyflie) with a camera, running completely onboard.",
+   "upvotes": 0,
+   "discussionId": "6adb83eb121a70fc68345822",
+   "ai_summary": "HyperDrone is a GPU-accelerated quadrotor simulator using a ray-tracing engine to render high-fidelity observations at high speed, enabling vision-based policy training and real-world transfer.",
+   "ai_keywords": [
+    "HyperDrone",
+    "HyperLux",
+    "ray-tracing engine",
+    "OptiX",
+    "Vulkan",
+    "Metal",
+    "WebGPU",
+    "multirotor dynamics",
+    "RGB",
+    "depth",
+    "semantic segmentation",
+    "instance segmentation",
+    "surface normals",
+    "optical flow",
+    "PBR",
+    "vision-based yaw-control"
+   ],
+   "ai_summary_model": "thinkingmachines/Inkling-Small",
+   "organization": {
+    "_id": "681e2a1307bdf1124edc827d",
+    "name": "rl-tools",
+    "fullname": "RLtools",
+    "avatar": "https://www.gravatar.com/avatar/826f52a2201f2e45b89ed295ce5145d8?d=retro&size=100"
+   }
+  },
+  "publishedAt": "2026-10-19T20:00:00.000Z",
+  "title": "HyperDrone: Simulation-to-Reality Transfer at Millions of Frames per Second",
+  "summary": "We present HyperDrone, an extremely fast quadrotor simulator focused on high-performance batch rendering that is more than 20x faster than existing state-of-the-art batch quadrotor simulators. HyperDrone combines highly optimized multirotor dynamics with HyperLux, a new ray-tracing engine that supports Nvidia OptiX, Vulkan, Apple Metal and WebGPU backends that takes full advantage of modern ray-tracing hardware, capable of running both components entirely on the GPU. HyperLux renders RGB, depth, semantic/instance segmentation, surface normals and optical flow observations at configurable levels of fidelity, including reflections, realistic lighting, motion blur, anti-aliasing, and Physically Based Rendering (PBR). Even in the highest-fidelity settings, HyperLux achieves millions of Frames Per Second (FPS) on consumer-grade GPUs while rendering realistic 3D scenes. We demonstrate the merits of HyperDrone by training a vision-based yaw-control policy purely in simulation and transferring it to a real small-scale quadrotor (Crazyflie) with a camera, running completely onboard.",
+  "mediaUrls": [
+   "https://cdn-uploads.huggingface.co/production/uploads/64a011bd343399711c7057ad/1j--xS1ZtNNLS601akop_.mp4"
+  ],
+  "thumbnail": "https://cdn-thumbnails.huggingface.co/social-thumbnails/papers/2610.28950.png",
+  "numComments": 1,
+  "submittedBy": {
+   "_id": "64a011bd343399711c7057ad",
+   "avatarUrl": "/avatars/ba09009f6ae9208ad084bf13135e85e2.svg",
+   "fullname": "Jonas Eschmann",
+   "name": "jonas-eschmann",
+   "type": "user",
+   "isPro": false,
+   "isHf": false,
+   "isHfAdmin": false,
+   "isMod": false,
+   "followerCount": 1,
+   "isUserFollowing": false
+  },
+  "organization": {
+   "_id": "681e2a1307bdf1124edc827d",
+   "name": "rl-tools",
+   "fullname": "RLtools",
+   "avatar": "https://www.gravatar.com/avatar/826f52a2201f2e45b89ed295ce5145d8?d=retro&size=100"
+  },
+  "isAuthorParticipating": false
+ },
+ {
+  "paper": {
+   "id": "2610.31651",
+   "authors": [
+    {
+     "_id": "6adb601d121a70fc683457b5",
+     "name": "Ava Pun",
+     "hidden": false
+    },
+    {
+     "_id": "6adb601d121a70fc683457b6",
+     "name": "Kevin Dai",
+     "hidden": false
+    },
+    {
+     "_id": "6adb601d121a70fc683457b7",
+     "name": "Sally Chen",
+     "hidden": false
+    },
+    {
+     "_id": "6adb601d121a70fc683457b8",
+     "name": "Maxwell Jones",
+     "hidden": false
+    },
+    {
+     "_id": "6adb601d121a70fc683457b9",
+     "name": "Ruixuan Liu",
+     "hidden": false
+    },
+    {
+     "_id": "6adb601d121a70fc683457ba",
+     "name": "Kangle Deng",
+     "hidden": false
+    },
+    {
+     "_id": "6adb601d121a70fc683457bb",
+     "name": "Changliu Liu",
+     "hidden": false
+    },
+    {
+     "_id": "6adb601d121a70fc683457bc",
+     "name": "Maneesh Agrawala",
+     "hidden": false
+    },
+    {
+     "_id": "6adb601d121a70fc683457bd",
+     "name": "Deva Ramanan",
+     "hidden": false
+    },
+    {
+     "_id": "6adb601d121a70fc683457be",
+     "name": "Jun-Yan Zhu",
+     "hidden": false
+    }
+   ],
+   "mediaUrls": [
+    "https://cdn-uploads.huggingface.co/production/uploads/672403d5f328a3e6638331ee/EUcI4xp1ACVO_EhPCppFG.mp4"
+   ],
+   "publishedAt": "2026-10-22T00:00:00.000Z",
+   "submittedOnDailyAt": "2026-10-23T00:00:00.000Z",
+   "title": "BrickWright: Agentic Creation of Physically Feasible Brick Builds",
+   "submittedOnDailyBy": {
+    "_id": "672403d5f328a3e6638331ee",
+    "avatarUrl": "https://cdn-avatars.huggingface.co/v1/production/uploads/noauth/TXr0SKWI-z-6FvUXTNWXT.jpeg",
+    "isPro": false,
+    "fullname": "Ava Pun",
+    "user": "AvaLovelace",
+    "type": "user",
+    "name": "AvaLovelace"
+   },
+   "summary": "Frontier coding agents are becoming increasingly adept at 3D modeling. Yet, they still face challenges when building objects meant to be assembled in the physical world, often creating invalid assemblies with floating, colliding, or disconnected parts. We argue that providing agents with tools for assembling builds and verifying their physical feasibility is sufficient for them to produce physically valid assemblies that still adhere to input prompts. Focusing on the domain of LEGO brick builds, we present BrickWright, a framework for generating physically feasible brick builds from text or image prompts using pre-trained agents, where a build is physically feasible if it uses only real parts, has no colliding or floating parts, and forms a connected structure if possible. BrickWright guides agents to create builds by writing code with BrickLayer, a Python toolkit with two main components: an ergonomic brick assembly API that halves inference cost compared to working in raw LDraw, and a validator that provides feedback on physical feasibility. Whereas baseline agents achieve physical validity rates ranging from only 9% (GPT-6 Luna) to 69% (GPT-6 Astra), BrickWright-guided agents achieve 100% validity on a sample of 512 prompts, while improving prompt adherence for lightweight agents and maintaining it for stronger agents. Additionally, they outperform specialized models on the text-to-brick task. Code is available on our project page: https://avalovelace1.github.io/brickwright/",
+   "upvotes": 1,
+   "discussionId": "6adb601d121a70fc683457bf",
+   "projectPage": "https://avalovelace1.github.io/brickwright/",
+   "githubRepo": "https://github.com/AvaLovelace1/brickwright",
+   "githubRepoAddedBy": "user",
+   "ai_summary": "BrickWright improves physical validity of AI-generated LEGO assemblies by providing agents with an assembly API and feasibility validator, achieving perfect validity while preserving prompt adherence.",
+   "ai_keywords": [
+    "pre-trained agents",
+    "inference cost",
+    "text-to-brick"
+   ],
+   "ai_summary_model": "thinkingmachines/Inkling-Small",
+   "githubStars": 2,
+   "organization": {
+    "_id": "680ba1b453d9d56430b82b57",
+    "name": "cmu-gil",
+    "fullname": "Generative Intelligence Lab (CMU)",
+    "avatar": "https://www.gravatar.com/avatar/ffb85327669c21e7ca3d691f4a8f3c8c?d=retro&size=100"
+   }
+  },
+  "publishedAt": "2026-10-21T20:00:00.000Z",
+  "title": "BrickWright: Agentic Creation of Physically Feasible Brick Builds",
+  "summary": "Frontier coding agents are becoming increasingly adept at 3D modeling. Yet, they still face challenges when building objects meant to be assembled in the physical world, often creating invalid assemblies with floating, colliding, or disconnected parts. We argue that providing agents with tools for assembling builds and verifying their physical feasibility is sufficient for them to produce physically valid assemblies that still adhere to input prompts. Focusing on the domain of LEGO brick builds, we present BrickWright, a framework for generating physically feasible brick builds from text or image prompts using pre-trained agents, where a build is physically feasible if it uses only real parts, has no colliding or floating parts, and forms a connected structure if possible. BrickWright guides agents to create builds by writing code with BrickLayer, a Python toolkit with two main components: an ergonomic brick assembly API that halves inference cost compared to working in raw LDraw, and a validator that provides feedback on physical feasibility. Whereas baseline agents achieve physical validity rates ranging from only 9% (GPT-6 Luna) to 69% (GPT-6 Astra), BrickWright-guided agents achieve 100% validity on a sample of 512 prompts, while improving prompt adherence for lightweight agents and maintaining it for stronger agents. Additionally, they outperform specialized models on the text-to-brick task. Code is available on our project page: https://avalovelace1.github.io/brickwright/",
+  "mediaUrls": [
+   "https://cdn-uploads.huggingface.co/production/uploads/672403d5f328a3e6638331ee/EUcI4xp1ACVO_EhPCppFG.mp4"
+  ],
+  "thumbnail": "https://cdn-thumbnails.huggingface.co/social-thumbnails/papers/2610.31651.png",
+  "numComments": 1,
+  "submittedBy": {
+   "_id": "672403d5f328a3e6638331ee",
+   "avatarUrl": "https://cdn-avatars.huggingface.co/v1/production/uploads/noauth/TXr0SKWI-z-6FvUXTNWXT.jpeg",
+   "fullname": "Ava Pun",
+   "name": "AvaLovelace",
+   "type": "user",
+   "isPro": false,
+   "isHf": false,
+   "isHfAdmin": false,
+   "isMod": false,
+   "followerCount": 7,
+   "isUserFollowing": false
+  },
+  "organization": {
+   "_id": "680ba1b453d9d56430b82b57",
+   "name": "cmu-gil",
+   "fullname": "Generative Intelligence Lab (CMU)",
+   "avatar": "https://www.gravatar.com/avatar/ffb85327669c21e7ca3d691f4a8f3c8c?d=retro&size=100"
+  },
+  "isAuthorParticipating": false
+ },
+ {
+  "paper": {
+   "id": "2610.27148",
+   "authors": [
+    {
+     "_id": "6ad8321aefdc4c3bd8229f04",
+     "user": {
+      "_id": "64b9ded93e62024f557813b0",
+      "avatarUrl": "/avatars/dac8a322ed7d4cadd24acb677b69f19f.svg",
+      "isPro": false,
+      "fullname": "Barry Li",
+      "user": "barryjinks",
+      "type": "user",
+      "name": "barryjinks"
+     },
+     "name": "Weien Li",
+     "status": "claimed_verified",
+     "statusLastChangedAt": "2026-10-22T13:06:58.548Z",
+     "hidden": false
+    },
+    {
+     "_id": "6ad8321aefdc4c3bd8229f05",
+     "name": "Haochen Liu",
+     "hidden": false
+    },
+    {
+     "_id": "6ad8321aefdc4c3bd8229f06",
+     "name": "Zeyu Li",
+     "hidden": false
+    },
+    {
+     "_id": "6ad8321aefdc4c3bd8229f07",
+     "name": "Rui Song",
+     "hidden": false
+    },
+    {
+     "_id": "6ad8321aefdc4c3bd8229f08",
+     "name": "Zixuan Dong",
+     "hidden": false
+    },
+    {
+     "_id": "6ad8321aefdc4c3bd8229f09",
+     "name": "Ye Yuan",
+     "hidden": false
+    }
+   ],
+   "publishedAt": "2026-10-19T00:00:00.000Z",
+   "submittedOnDailyAt": "2026-10-23T00:00:00.000Z",
+   "title": "Who Takes the Lead? Model Ability and Task-Conditioned Collaboration with Humans",
+   "submittedOnDailyBy": {
+    "_id": "64b9ded93e62024f557813b0",
+    "avatarUrl": "/avatars/dac8a322ed7d4cadd24acb677b69f19f.svg",
+    "isPro": false,
+    "fullname": "Barry Li",
+    "user": "barryjinks",
+    "type": "user",
+    "name": "barryjinks"
+   },
+   "summary": "As language-model agents grow more capable, they can carry more of a task without asking anyone for help. Falling reliance on a human partner is easy to read as a failure of collaboration when it may instead be a correct division of labor, and the rate of human involvement alone cannot tell the two apart. We study this systematically by placing an agent and a person under a shared objective while varying who holds the advantage: the human has a clear advantage, neither does, or the agent does. To obtain this control, we introduce a shared-control maze, in which an agent-controlled and a human-controlled avatar share the objective of reaching a common target in as few team turns as possible. The agent allocates each team turn between acting itself and handing the move to the person, and initial placement sets the human's shortest-path advantage while the task is otherwise unchanged. We evaluate GPT~5.6~Sol, Command~A+, Qwen~3.8~27B, and Command~R, first measuring solo capability with a single avatar and full-map observability, then running co-play with human participants across the three advantage conditions. Across the four models, stronger solo performance is associated with selective, route-conditioned human involvement: the models that solve the maze reliably on their own act for themselves almost without exception when the human holds no advantage, and involve the human on roughly 80% of initial decisions when the human route is shorter. Command R, the model with substantially weaker solo performance, shows no such selectivity.",
+   "upvotes": 4,
+   "discussionId": "6ad8321befdc4c3bd8229f0a",
+   "ai_summary": "Researchers use a shared-control maze to show that stronger language-model agents selectively involve humans based on route advantage rather than failing to collaborate.",
+   "ai_keywords": [
+    "shared-control maze",
+    "agent-controlled avatar",
+    "human-controlled avatar",
+    "co-play",
+    "solo performance",
+    "route-conditioned human involvement",
+    "GPT-5.6 Sol",
+    "Command A+",
+    "Qwen 3.8 27B",
+    "Command R"
+   ],
+   "ai_summary_model": "thinkingmachines/Inkling-Small",
+   "organization": {
+    "_id": "6983db493c6df70911445535",
+    "name": "5a-community",
+    "fullname": "New Ground AI",
+    "avatar": "https://cdn-avatars.huggingface.co/v1/production/uploads/6354a0b05eac2d2efa7adc63/OYS1kfEpBAbx83m8ZtNY3.png"
+   }
+  },
+  "publishedAt": "2026-10-18T20:00:00.000Z",
+  "title": "Who Takes the Lead? Model Ability and Task-Conditioned Collaboration with Humans",
+  "summary": "As language-model agents grow more capable, they can carry more of a task without asking anyone for help. Falling reliance on a human partner is easy to read as a failure of collaboration when it may instead be a correct division of labor, and the rate of human involvement alone cannot tell the two apart. We study this systematically by placing an agent and a person under a shared objective while varying who holds the advantage: the human has a clear advantage, neither does, or the agent does. To obtain this control, we introduce a shared-control maze, in which an agent-controlled and a human-controlled avatar share the objective of reaching a common target in as few team turns as possible. The agent allocates each team turn between acting itself and handing the move to the person, and initial placement sets the human's shortest-path advantage while the task is otherwise unchanged. We evaluate GPT~5.6~Sol, Command~A+, Qwen~3.8~27B, and Command~R, first measuring solo capability with a single avatar and full-map observability, then running co-play with human participants across the three advantage conditions. Across the four models, stronger solo performance is associated with selective, route-conditioned human involvement: the models that solve the maze reliably on their own act for themselves almost without exception when the human holds no advantage, and involve the human on roughly 80% of initial decisions when the human route is shorter. Command R, the model with substantially weaker solo performance, shows no such selectivity.",
+  "thumbnail": "https://cdn-thumbnails.huggingface.co/social-thumbnails/papers/2610.27148.png",
+  "numComments": 1,
+  "submittedBy": {
+   "_id": "64b9ded93e62024f557813b0",
+   "avatarUrl": "/avatars/dac8a322ed7d4cadd24acb677b69f19f.svg",
+   "fullname": "Barry Li",
+   "name": "barryjinks",
+   "type": "user",
+   "isPro": false,
+   "isHf": false,
+   "isHfAdmin": false,
+   "isMod": false,
+   "isUserFollowing": false
+  },
+  "organization": {
+   "_id": "6983db493c6df70911445535",
+   "name": "5a-community",
+   "fullname": "New Ground AI",
+   "avatar": "https://cdn-avatars.huggingface.co/v1/production/uploads/6354a0b05eac2d2efa7adc63/OYS1kfEpBAbx83m8ZtNY3.png"
+  },
+  "isAuthorParticipating": true
+ }
+]
