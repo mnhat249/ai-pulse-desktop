@@ -87,9 +87,10 @@ class HFPapersAdapter:
         self.warnings: list[str] = []
 
     async def fetch(self, client: httpx.AsyncClient) -> list[RawItem]:
+        self.warnings = []
         response = await request(client, self.name, PAPERS_URL, params={"limit": self._limit})
         entries = _expect_list(self.name, parse_json(self.name, response))
-        return parse_items(self.name, entries, build_paper)
+        return parse_items(self.name, entries, build_paper, self.warnings)
 
 
 class HFModelsAdapter:
@@ -101,6 +102,7 @@ class HFModelsAdapter:
         self.warnings: list[str] = []
 
     async def fetch(self, client: httpx.AsyncClient) -> list[RawItem]:
+        self.warnings = []
         response = await request(
             client,
             self.name,
@@ -108,4 +110,4 @@ class HFModelsAdapter:
             params={"sort": "trendingScore", "direction": -1, "limit": self._limit},
         )
         models = _expect_list(self.name, parse_json(self.name, response))
-        return parse_items(self.name, models, build_model)
+        return parse_items(self.name, models, build_model, self.warnings)

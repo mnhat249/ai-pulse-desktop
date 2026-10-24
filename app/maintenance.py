@@ -13,20 +13,28 @@ from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any
 
-from sqlalchemy import delete, select
+from sqlalchemy import delete, func, select
 from sqlalchemy.dialects.sqlite import insert as sqlite_insert
 from sqlalchemy.ext.asyncio import AsyncConnection
 
 from app.config import MaintenanceSettings, Settings
 from app.core.models import utcnow
 from app.storage.db import backup_database
-from app.storage.tables import cluster_items, clusters, raw_items, seen_items, user_state
+from app.storage.tables import (
+    cluster_items,
+    clusters,
+    metric_snapshots,
+    raw_items,
+    seen_items,
+    user_state,
+)
 from app.storage.writer import Writer
 
 logger = logging.getLogger(__name__)
 
 BACKUP_PREFIX = "neuralradar-weekly-"
 CHUNK_SIZE = 500
+SNAPSHOT_KEEP_DAYS = 7
 VACUUM_TIMEOUT_SECONDS = 60
 
 
@@ -81,7 +89,24 @@ async def purge_old(
     await conn.execute(
         delete(seen_items).where(seen_items.c.purged_at < now - timedelta(days=tombstone_days))
     )
+    await prune_snapshots(conn, now)
     return len(ids), len(orphan_rows)
+
+
+async def prune_snapshots(conn: AsyncConnection, now: datetime) -> int:
+    """Bỏ snapshot cũ hơn `SNAPSHOT_KEEP_DAYS` ngày, luôn giữ snapshot mới nhất của mỗi chỉ số."""
+    newest = (
+        select(func.max(metric_snapshots.c.id))
+        .group_by(metric_snapshots.c.item_id, metric_snapshots.c.metric)
+        .scalar_subquery()
+    )
+    result = await conn.execute(
+        delete(metric_snapshots).where(
+            metric_snapshots.c.captured_at < now - timedelta(days=SNAPSHOT_KEEP_DAYS),
+            metric_snapshots.c.id.not_in(newest),
+        )
+    )
+    return int(result.rowcount or 0)
 
 
 def _chunks(rows: Sequence[Any]) -> Iterator[Sequence[Any]]:

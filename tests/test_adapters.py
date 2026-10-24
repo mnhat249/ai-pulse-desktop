@@ -515,3 +515,44 @@ async def test_hackernews_story_without_url_falls_back_to_hn_link(sleeps: list[f
             ).fetch(client)
     assert item.url == "https://news.ycombinator.com/item?id=42"
     assert item.text == "xin chào" and item.metrics["points"] == 90
+
+
+async def test_github_skips_a_broken_repo_and_keeps_the_rest(sleeps: list[float]) -> None:
+    body = fixture("github_search.json")
+    body["items"] = [{"id": 1, "full_name": "broken/no-fields"}, *body["items"]]
+    with respx.mock() as router:
+        router.get(GITHUB_URL).respond(200, json=body)
+        async with httpx.AsyncClient() as client:
+            adapter = GitHubAdapter(GitHubSettings(topics=["llm"]))
+            items = await adapter.fetch(client)
+    assert len(items) == len(fixture("github_search.json")["items"])
+    assert any("bỏ một phần tử hỏng" in w for w in adapter.warnings)
+
+
+async def test_hf_papers_skips_a_broken_entry_and_keeps_the_rest(sleeps: list[float]) -> None:
+    body = [{"paper": {}}, *fixture("hf_daily_papers.json")]
+    with respx.mock() as router:
+        router.get(HF_PAPERS_URL).respond(200, json=body)
+        async with httpx.AsyncClient() as client:
+            adapter = HFPapersAdapter(HuggingFaceSettings())
+            items = await adapter.fetch(client)
+    assert len(items) == len(fixture("hf_daily_papers.json"))
+    assert adapter.warnings
+
+
+async def test_hf_models_all_entries_broken_raises(sleeps: list[float]) -> None:
+    with respx.mock() as router:
+        router.get(HF_MODELS_URL).respond(200, json=[{"x": 1}, {"y": 2}])
+        async with httpx.AsyncClient() as client:
+            with pytest.raises(SourceError, match="hf_models"):
+                await HFModelsAdapter(HuggingFaceSettings()).fetch(client)
+
+
+async def test_hackernews_ignores_non_dict_hits(sleeps: list[float]) -> None:
+    body = fixture("hn_search.json")
+    body["hits"] = ["rác", None, *body["hits"]]
+    with respx.mock() as router:
+        router.get(HN_URL).respond(200, json=body)
+        async with httpx.AsyncClient() as client:
+            items = await HackerNewsAdapter(HackerNewsSettings()).fetch(client)
+    assert items

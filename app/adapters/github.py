@@ -107,7 +107,8 @@ class GitHubAdapter:
             return await self._search(client, query)
 
         found = await collect(self.name, self._queries(), search, self.warnings)
-        repos: dict[int, dict[str, Any]] = {}
-        for repo in found:
-            repos.setdefault(repo["id"], repo)
-        return parse_items(self.name, repos.values(), build_item)
+        repos: dict[Any, dict[str, Any]] = {}
+        for index, repo in enumerate(found):
+            key = repo.get("id", ("?", index)) if isinstance(repo, dict) else ("?", index)
+            repos.setdefault(key, repo)
+        return parse_items(self.name, repos.values(), build_item, self.warnings)

@@ -181,12 +181,27 @@ async def collect(
     return results
 
 
-def parse_items(source: str, raw: Any, build: Callable[[Any], RawItem]) -> list[RawItem]:
-    """API đổi định dạng thì ném SourceError rõ tên nguồn, các nguồn khác chạy bình thường."""
-    try:
-        return [build(entry) for entry in raw]
-    except (KeyError, TypeError, ValueError, AttributeError, IndexError) as exc:
-        raise SourceError(source, f"định dạng dữ liệu đã đổi: {exc!r}") from exc
+def parse_items(
+    source: str,
+    raw: Any,
+    build: Callable[[Any], RawItem],
+    warnings: list[str] | None = None,
+) -> list[RawItem]:
+    """Phần tử hỏng bị bỏ và ghi cảnh báo; mọi phần tử đều hỏng thì ném SourceError rõ tên nguồn."""
+    items: list[RawItem] = []
+    first_error: Exception | None = None
+    entries = list(raw)
+    for entry in entries:
+        try:
+            items.append(build(entry))
+        except (KeyError, TypeError, ValueError, AttributeError, IndexError) as exc:
+            first_error = first_error or exc
+            if warnings is not None:
+                warnings.append(f"bỏ một phần tử hỏng: {exc!r}")
+            logger.warning("Nguồn %s bỏ một phần tử hỏng: %r", source, exc)
+    if entries and not items and first_error is not None:
+        raise SourceError(source, f"định dạng dữ liệu đã đổi: {first_error!r}") from first_error
+    return items
 
 
 def parse_datetime(value: str) -> datetime:

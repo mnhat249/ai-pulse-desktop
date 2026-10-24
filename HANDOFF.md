@@ -33,6 +33,10 @@ Thực hiện `docs/PLAN.md`. Toàn bộ phần code của 6 giai đoạn (0–5
 - Feed RSS trùng tên (sau khi slug) hoặc URL không phải http/https bị bỏ và ghi log; `settings.toml` hỏng khi khởi động được đổi tên `.bad` và dùng mặc định.
 - Ghi embedding bù lỗi không làm hỏng vòng xử lý; nháy đơn cong trong PowerShell được nhân đôi; `maintenance.json` ghi nguyên tử; bảo trì chạy sau 2 phút; ngày RSS ở tương lai bị kẹp về hiện tại.
 
+## Đã sửa ở lượt review lại GĐ4-5
+- GitHub/HF/HN: phần tử hỏng bị bỏ và ghi vào `warnings` (như RSS/Bluesky), chỉ khi mọi phần tử đều hỏng mới ném `SourceError`.
+- `metric_snapshots` được dọn cùng bảo trì: bỏ snapshot cũ hơn 7 ngày, luôn giữ snapshot mới nhất của mỗi chỉ số.
+
 ## Đã sửa sau lượt kiểm tra trên dữ liệu thật
 - Thang độ nóng mặc định khớp phân bố thật (GitHub 500, HF paper 100): trước đó 41/495 cụm cùng điểm 57,1.
 - Màn hình Tình trạng nguồn: tên dễ đọc (`sources.display_name`), cuộn được; cửa sổ Cài đặt hết dải trắng thừa.
@@ -48,7 +52,7 @@ Thực hiện `docs/PLAN.md`. Toàn bộ phần code của 6 giai đoạn (0–5
 - Chưa kiểm bằng mắt: toast Windows, icon khay, màn hình "Nguồn" và "Cài đặt"; chưa thử DPI khác 125%.
 
 ## Còn tồn nhỏ
-- Một phần tử hỏng trong phản hồi GitHub/HF/HN làm hỏng cả nguồn (RSS và Bluesky thì bỏ phần tử hỏng); `serve` (signal Windows) chưa có test tự động; trạng thái tạm ngưng nguồn chỉ nằm trong RAM; `metric_snapshots` chỉ được dọn khi cụm bị xóa; quota LLM tính theo ngày UTC; widget dựng lại toàn bộ thẻ mỗi lần làm mới.
+- `serve` (signal Windows) chưa có test tự động; trạng thái tạm ngưng nguồn chỉ nằm trong RAM; quota LLM tính theo ngày UTC; widget dựng lại toàn bộ thẻ mỗi lần làm mới.
 - Anthropic chưa có RSS chính thức (404) nên chưa có trong danh sách feed mặc định.
 
 ## Bước tiếp

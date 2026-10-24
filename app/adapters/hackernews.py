@@ -81,6 +81,6 @@ class HackerNewsAdapter:
         found = await collect(self.name, self._settings.keywords, search, self.warnings)
         hits: dict[str, dict[str, Any]] = {}
         for hit in found:
-            if self._pattern.search(hit.get("title") or ""):
+            if isinstance(hit, dict) and self._pattern.search(hit.get("title") or ""):
                 hits.setdefault(str(hit.get("objectID")), hit)
-        return parse_items(self.name, hits.values(), build_story)
+        return parse_items(self.name, hits.values(), build_story, self.warnings)
