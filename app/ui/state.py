@@ -21,6 +21,7 @@ class WindowState:
     width: int = 400
     height: int = 560
     always_on_top: bool = True
+    topic: str = ""  # nhãn chủ đề đang chọn; trống = mặc định "Chủ đề của tôi"
 
     @property
     def geometry(self) -> str:
@@ -42,6 +43,7 @@ def load_state(path: Path, default_on_top: bool = True) -> WindowState:
             width=_clamp(int(raw.get("width", state.width)), MIN_WIDTH, MAX_SIZE),
             height=_clamp(int(raw.get("height", state.height)), MIN_HEIGHT, MAX_SIZE),
             always_on_top=bool(raw.get("always_on_top", default_on_top)),
+            topic=str(raw.get("topic", "")),
         )
     except FileNotFoundError:
         return state

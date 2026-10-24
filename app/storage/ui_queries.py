@@ -10,10 +10,12 @@ from pathlib import Path
 from typing import Literal
 
 from app.core import sources
+from app.core.topics import DEFAULT_RULES, TopicRule, match_topics
 
 ClusterFilter = Literal["all", "unread", "bookmarked"]
 
 BUSY_TIMEOUT_SECONDS = 5
+MAX_TOPIC_SCAN_ROWS = 500  # khi lọc chủ đề: số cụm tối đa duyệt qua để gom đủ `limit`
 
 
 def source_label(source: str) -> str:
@@ -36,6 +38,7 @@ class ClusterView:
     summarized: bool
     last_seen: datetime
     labels: tuple[str, ...] = field(default_factory=tuple)
+    topics: tuple[str, ...] = field(default_factory=tuple)  # khóa chủ đề khớp (xem core.topics)
 
     @property
     def source_text(self) -> str:
@@ -64,7 +67,9 @@ def _utc(value: str | None) -> datetime:
     return datetime.fromisoformat(value).replace(tzinfo=UTC)
 
 
-def _build_view(conn: sqlite3.Connection, row: sqlite3.Row) -> ClusterView:
+def _build_view(
+    conn: sqlite3.Connection, row: sqlite3.Row, rules: tuple[TopicRule, ...] = DEFAULT_RULES
+) -> ClusterView:
     members = conn.execute(
         "SELECT r.source, r.title, r.url FROM raw_items r "
         "JOIN cluster_items ci ON ci.item_id = r.id WHERE ci.cluster_id = ? ORDER BY r.id",
@@ -74,12 +79,16 @@ def _build_view(conn: sqlite3.Connection, row: sqlite3.Row) -> ClusterView:
     sources = tuple(dict.fromkeys(m["source"] for m in members))
     labels = tuple(dict.fromkeys(source_label(s) for s in sources))
     original = members[0]["title"] if members else ""
+    title = digest["title_vi"] if digest else original
+    innovation = digest["innovation"] if digest else None
+    impact = digest["impact"] if digest else None
+    haystack = "\n".join([title, *(m["title"] for m in members), innovation or "", impact or ""])
     return ClusterView(
         id=row["id"],
-        title=digest["title_vi"] if digest else original,
+        title=title,
         original_title=original,
-        innovation=digest["innovation"] if digest else None,
-        impact=digest["impact"] if digest else None,
+        innovation=innovation,
+        impact=impact,
         importance=float(row["importance"]),
         sources=sources,
         primary_url=row["primary_url"],
@@ -89,6 +98,7 @@ def _build_view(conn: sqlite3.Connection, row: sqlite3.Row) -> ClusterView:
         summarized=digest is not None,
         last_seen=_utc(row["last_seen"]),
         labels=labels,
+        topics=match_topics(haystack, rules, sources),
     )
 
 
@@ -106,8 +116,14 @@ def list_clusters(
     view: ClusterFilter = "all",
     source: str | None = None,
     limit: int = 30,
+    topics: tuple[str, ...] | None = None,
+    topic_rules: tuple[TopicRule, ...] = DEFAULT_RULES,
 ) -> list[ClusterView]:
-    """Cụm không phải rác, điểm cao trước; lọc chưa đọc / bookmark / theo nguồn."""
+    """Cụm không phải rác, điểm cao trước; lọc chưa đọc / bookmark / theo nguồn / theo chủ đề.
+
+    `topics` là các khóa chủ đề (cụm khớp một trong số đó thì giữ lại); None = không lọc.
+    Khi lọc, duyệt theo trang tới khi đủ `limit` hoặc hết `MAX_TOPIC_SCAN_ROWS` dòng.
+    """
     sql = _SELECT
     params: list[object] = []
     if view == "unread":
@@ -120,9 +136,27 @@ def list_clusters(
             "WHERE ci.cluster_id = c.id AND r.source = ?)"
         )
         params.append(source)
-    sql += " ORDER BY c.importance DESC, c.last_seen DESC, c.id DESC LIMIT ?"
-    params.append(limit)
-    return [_build_view(conn, row) for row in conn.execute(sql, params).fetchall()]
+    sql += " ORDER BY c.importance DESC, c.last_seen DESC, c.id DESC LIMIT ? OFFSET ?"
+    if topics is None:
+        rows = conn.execute(sql, [*params, limit, 0]).fetchall()
+        return [_build_view(conn, row, topic_rules) for row in rows]
+    wanted = set(topics)
+    page = max(limit, 50)
+    found: list[ClusterView] = []
+    scanned = 0
+    while len(found) < limit and scanned < MAX_TOPIC_SCAN_ROWS:
+        size = min(page, MAX_TOPIC_SCAN_ROWS - scanned)
+        rows = conn.execute(sql, [*params, size, scanned]).fetchall()
+        for row in rows:
+            cluster = _build_view(conn, row, topic_rules)
+            if wanted.intersection(cluster.topics):
+                found.append(cluster)
+                if len(found) == limit:
+                    break
+        scanned += size
+        if len(rows) < size:
+            break
+    return found
 
 
 def get_cluster(conn: sqlite3.Connection, cluster_id: int) -> ClusterView | None:

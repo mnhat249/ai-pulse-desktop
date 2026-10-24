@@ -17,6 +17,8 @@ from pydantic_settings import (
     TomlConfigSettingsSource,
 )
 
+from app.core.topics import DEFAULT_KEYS, DEFAULT_RULES, TopicRule
+
 logger = logging.getLogger(__name__)
 
 KEYRING_SERVICE = "NeuralRadar"
@@ -189,6 +191,41 @@ class UISettings(BaseModel):
     process_interval_minutes: int = Field(5, ge=1)
 
 
+class TopicOverride(BaseModel):
+    """Luật chủ đề trong `[topics.rules.<khóa>]`: ghi đè chủ đề có sẵn hoặc thêm chủ đề mới."""
+
+    label: str | None = None
+    keywords: list[str] | None = None
+
+
+class TopicSettings(BaseModel):
+    enabled: list[str] = list(DEFAULT_KEYS)  # "Chủ đề của tôi" = hợp các chủ đề này
+    rules: dict[str, TopicOverride] = {}
+
+    def resolved_rules(self) -> tuple[TopicRule, ...]:
+        """Luật mặc định đã áp ghi đè, rồi tới các chủ đề do người dùng thêm (cần `keywords`)."""
+        by_key = {rule.key: rule for rule in DEFAULT_RULES}
+        for key, override in self.rules.items():
+            base = by_key.get(key)
+            if base is not None:
+                by_key[key] = TopicRule(
+                    key=key,
+                    label=override.label or base.label,
+                    keywords=tuple(override.keywords)
+                    if override.keywords is not None
+                    else base.keywords,
+                    patterns=base.patterns if override.keywords is None else (),
+                    sources=base.sources,
+                )
+            elif override.keywords:
+                by_key[key] = TopicRule(key, override.label or key, tuple(override.keywords))
+        return tuple(by_key.values())
+
+    def enabled_keys(self) -> tuple[str, ...]:
+        known = {rule.key for rule in self.resolved_rules()}
+        return tuple(dict.fromkeys(k for k in self.enabled if k in known))
+
+
 class Settings(BaseSettings):
     """Đọc từ `settings.toml` trong thư mục dữ liệu; khóa API đọc riêng từ keyring."""
 
@@ -209,6 +246,7 @@ class Settings(BaseSettings):
     llm: LLMSettings = LLMSettings()
     ranking: RankingSettings = RankingSettings()
     ui: UISettings = UISettings()
+    topics: TopicSettings = TopicSettings()
 
     @field_validator("rss")
     @classmethod

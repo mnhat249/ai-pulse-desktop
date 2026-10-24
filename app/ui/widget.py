@@ -97,6 +97,7 @@ class FloatingWidget(ctk.CTk):  # type: ignore[misc]
             "small": ctk.CTkFont(family=body, size=11),
             "chip": ctk.CTkFont(family=body, size=11, weight="bold"),
         }
+        self._model.set_topic_label(self._state.topic or self._model.topic)
         self._build()
         self.bind("<Configure>", self._on_configure)
         self.protocol("WM_DELETE_WINDOW", self._on_close)
@@ -186,6 +187,28 @@ class FloatingWidget(ctk.CTk):  # type: ignore[misc]
             dropdown_text_color=theme.INK,
         )
         self._source_menu.pack(side="right")
+
+        topic_row = ctk.CTkFrame(self, fg_color="transparent")
+        topic_row.pack(fill="x", padx=12, pady=(0, 4))
+        ctk.CTkLabel(
+            topic_row, text="Chủ đề", font=self._fonts["body"], text_color=theme.MUTED
+        ).pack(side="left", padx=(2, 6))
+        self._topic_menu = ctk.CTkOptionMenu(
+            topic_row,
+            values=self._model.topic_choices(),
+            command=self._on_topic,
+            width=170,
+            font=self._fonts["body"],
+            dropdown_font=self._fonts["body"],
+            fg_color=theme.CARD,
+            button_color=theme.TRACK,
+            button_hover_color=theme.BORDER,
+            text_color=theme.INK,
+            dropdown_fg_color=theme.CARD,
+            dropdown_text_color=theme.INK,
+        )
+        self._topic_menu.set(self._model.topic)
+        self._topic_menu.pack(side="left")
 
         self._status_label = ctk.CTkLabel(
             self, text="", font=self._fonts["small"], text_color=theme.MUTED, anchor="w", height=14
@@ -296,6 +319,12 @@ class FloatingWidget(ctk.CTk):  # type: ignore[misc]
 
     def _on_source(self, label: str) -> None:
         self._model.set_source_label(label)
+        self.refresh()
+
+    def _on_topic(self, label: str) -> None:
+        self._model.set_topic_label(label)
+        self._state.topic = self._model.topic
+        self._save_now()
         self.refresh()
 
     def open_cluster_link(self, cluster: ClusterView) -> None:
@@ -523,6 +552,7 @@ class FloatingWidget(ctk.CTk):  # type: ignore[misc]
             width=round(self.winfo_width() / self._get_window_scaling()),
             height=round(self.winfo_height() / self._get_window_scaling()),
             always_on_top=self._state.always_on_top,
+            topic=self._state.topic,
         )
         save_state(self._state_path, self._state)
 
