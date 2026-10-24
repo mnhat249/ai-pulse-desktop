@@ -16,6 +16,7 @@ SELECTED = "#A9CFC8"  # mục đang chọn của bộ lọc
 TRACK = "#CBD6D1"  # rãnh của dải tín hiệu
 BORDER = "#BCCAC4"
 ERROR = "#B3261E"
+LINK = "#1E4552"  # link nguồn trong thẻ
 
 SIGNAL_LOW = (0x8F, 0xB5, 0xB0)  # xanh biển
 SIGNAL_MID = (0xE0, 0xA1, 0x00)  # hổ phách

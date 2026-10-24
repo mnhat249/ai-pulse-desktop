@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
+import html
 import json
+import re
 import sqlite3
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
@@ -199,3 +201,45 @@ def last_error(conn: sqlite3.Connection, source: str) -> str | None:
         (source,),
     ).fetchone()
     return None if row is None else row[0]
+
+
+EXCERPT_CHARS = 300
+_TAG = re.compile(r"<[^>]*>")
+
+
+def plain_excerpt(text: str | None, limit: int = EXCERPT_CHARS) -> str:
+    """Bỏ thẻ HTML, giải mã ký tự đặc biệt, gộp khoảng trắng và cắt tối đa `limit` ký tự."""
+    clean = " ".join(html.unescape(_TAG.sub(" ", text or "")).split())
+    if len(clean) <= limit:
+        return clean
+    return clean[:limit].rstrip() + "…"
+
+
+@dataclass(frozen=True)
+class SourceItemView:
+    source: str
+    label: str
+    title: str
+    url: str
+
+
+@dataclass(frozen=True)
+class ClusterDetails:
+    """Phần nặng của thẻ, chỉ đọc khi thẻ được mở."""
+
+    excerpt: str
+    items: tuple[SourceItemView, ...]
+
+
+def cluster_details(conn: sqlite3.Connection, cluster_id: int) -> ClusterDetails:
+    """Đoạn đầu nội dung bài chính (bài đầu có chữ) và từng bài trong cụm."""
+    rows = conn.execute(
+        "SELECT r.source, r.title, r.url, r.text FROM raw_items r "
+        "JOIN cluster_items ci ON ci.item_id = r.id WHERE ci.cluster_id = ? ORDER BY r.id",
+        (cluster_id,),
+    ).fetchall()
+    excerpt = next((e for e in (plain_excerpt(r["text"]) for r in rows) if e), "")
+    items = tuple(
+        SourceItemView(r["source"], source_label(r["source"]), r["title"], r["url"]) for r in rows
+    )
+    return ClusterDetails(excerpt, items)
