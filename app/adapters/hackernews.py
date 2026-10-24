@@ -9,9 +9,12 @@ import httpx
 from app.adapters.base import SourceError, collect, parse_items, parse_json, request
 from app.config import HackerNewsSettings
 from app.core.models import RawItem, utcnow
+from app.core.sources import SourceInfo, register
 
 SEARCH_URL = "https://hn.algolia.com/api/v1/search_by_date"
 ITEM_URL = "https://news.ycombinator.com/item?id={}"
+
+register(SourceInfo("hackernews", "HN", "#B5481B", rank=3, heat_metric="points"))
 
 
 def keyword_pattern(keywords: list[str]) -> re.Pattern[str]:

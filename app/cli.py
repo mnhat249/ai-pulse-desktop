@@ -70,6 +70,16 @@ async def process(settings: Settings) -> int:
     return 0 if result is not None else 1
 
 
+async def maintain(settings: Settings) -> int:
+    runtime = await open_runtime(settings)
+    try:
+        await runtime.radar.maintain()
+    finally:
+        await close_runtime(runtime)
+    sys.stdout.write("Đã chạy bảo trì (xem log để biết chi tiết).\n")
+    return 0
+
+
 async def serve(settings: Settings) -> int:
     runtime = await open_runtime(settings, on_new=print_new)
     stop = asyncio.Event()
@@ -112,7 +122,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     use_utf8_console()
     parser = argparse.ArgumentParser(prog="python -m app.cli")
     parser.add_argument(
-        "command", choices=["run-once", "process", "serve", "status", "export-pairs"]
+        "command", choices=["run-once", "process", "serve", "status", "export-pairs", "maintain"]
     )
     parser.add_argument(
         "--out", type=Path, default=Path("pairs.csv"), help="export-pairs: file CSV"
@@ -124,6 +134,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     handlers: dict[str, Callable[[Settings], Coroutine[Any, Any, int]]] = {
         "run-once": run_once,
         "process": process,
+        "maintain": maintain,
         "serve": serve,
         "status": status,
     }

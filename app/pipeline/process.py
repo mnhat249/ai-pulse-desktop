@@ -5,7 +5,7 @@ from collections.abc import Awaitable, Callable
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from functools import partial
-from typing import TypeVar
+from typing import Any, TypeVar
 
 from sqlalchemy import select, update
 from sqlalchemy.dialects.sqlite import insert as sqlite_insert
@@ -15,9 +15,9 @@ from app.config import Settings, app_home, get_secret
 from app.core.models import Digest, utcnow
 from app.pipeline.cluster import ItemRow, assign_item, load_unclustered, refresh_cluster
 from app.pipeline.digest import ClusterInput, Provider, digest_batch, load_prompt
-from app.pipeline.embeddings import Embedder, FastEmbedder, Vector, embedding_text
+from app.pipeline.embeddings import Embedder, FastEmbedder, Vector, embedding_text, to_bytes
 from app.pipeline.llm import GeminiClient, GroqClient
-from app.storage.tables import cluster_items, clusters, llm_usage, raw_items
+from app.storage.tables import cluster_items, clusters, item_embeddings, llm_usage, raw_items
 from app.storage.writer import Writer
 
 logger = logging.getLogger(__name__)
@@ -25,6 +25,7 @@ logger = logging.getLogger(__name__)
 MAX_BATCHES_PER_RUN = 3
 MAX_MEMBER_TITLES = 3
 DEFER_MINUTES = 60
+BACKFILL_BATCH = 100
 _T = TypeVar("_T")
 
 
@@ -88,10 +89,55 @@ class Processor:
                 lambda conn: self._assign_all(conn, items, vectors)
             )
             result.clustered = len(items)
+        await self._backfill_embeddings()
         revived = await self._writer.submit(self._refresh_recent)
         result.touched = list(dict.fromkeys([*result.touched, *revived]))
         result.digested = await self._digest_pending()
         return result
+
+    async def _backfill_embeddings(self) -> int:
+        """Bù embedding cho bài đã gom trước khi có model (mỗi vòng một mẻ nhỏ).
+
+        Bài cũ không bị gom lại; vector chỉ để so sánh với bài mới và để xuất cặp gán nhãn.
+        """
+        if self._embedder is None:
+            return 0
+        rows = await self._read(self._items_without_embedding)
+        if not rows:
+            return 0
+        try:
+            vectors = await self._embedder.embed([embedding_text(r.title, r.text) for r in rows])
+        except Exception:
+            logger.exception("Không bù được embedding cho bài cũ")
+            return 0
+        model = self._embedder.model_name
+        try:
+            await self._writer.submit(
+                partial(self._store_embeddings, rows=rows, vectors=vectors, model=model)
+            )
+        except Exception:
+            logger.exception("Không ghi được embedding bù; thử lại ở vòng sau")
+            return 0
+        return len(rows)
+
+    async def _items_without_embedding(self, conn: AsyncConnection) -> list[Any]:
+        stmt = (
+            select(raw_items.c.id, raw_items.c.title, raw_items.c.text)
+            .outerjoin(item_embeddings, item_embeddings.c.item_id == raw_items.c.id)
+            .where(item_embeddings.c.item_id.is_(None))
+            .order_by(raw_items.c.id.desc())
+            .limit(BACKFILL_BATCH)
+        )
+        return list((await conn.execute(stmt)).all())
+
+    async def _store_embeddings(
+        self, conn: AsyncConnection, *, rows: list[Any], vectors: list[Vector], model: str
+    ) -> None:
+        values = [
+            {"item_id": row.id, "model": model, "vector": to_bytes(vec)}
+            for row, vec in zip(rows, vectors, strict=True)
+        ]
+        await conn.execute(sqlite_insert(item_embeddings).values(values).on_conflict_do_nothing())
 
     async def _refresh_recent(self, conn: AsyncConnection) -> list[int]:
         """Tính lại cờ rác và điểm của các cụm mới (trong cửa sổ lọc trùng).

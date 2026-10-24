@@ -22,10 +22,7 @@ def noise_reason(
         return "tiêu đề quá ngắn"
     if settings.spam_keywords and (match := spam_pattern(settings.spam_keywords).search(title)):
         return f"từ khóa quảng cáo: {match.group(0).lower()}"
-    if source == "github" and metrics.get("stars", 0) < settings.github_min_stars:
-        return f"repo dưới {settings.github_min_stars} sao"
-    if source == "hf_models" and metrics.get("likes", 0) < settings.hf_models_min_likes:
-        return f"model dưới {settings.hf_models_min_likes} lượt thích"
-    if source == "hackernews" and metrics.get("points", 0) < settings.hn_min_points:
-        return f"bài HN dưới {settings.hn_min_points} điểm"
+    for metric, minimum in settings.thresholds.get(source, {}).items():
+        if metrics.get(metric, 0) < minimum:
+            return f"{metric} dưới {minimum:g}"
     return None

@@ -5,6 +5,7 @@ from __future__ import annotations
 import tkinter.font as tkfont
 from datetime import datetime
 
+from app.core import sources
 from app.core.models import utcnow
 
 BG = "#E6ECE7"  # giấy hải đồ
@@ -20,13 +21,7 @@ SIGNAL_LOW = (0x8F, 0xB5, 0xB0)  # xanh biển
 SIGNAL_MID = (0xE0, 0xA1, 0x00)  # hổ phách
 SIGNAL_HIGH = (0xC8, 0x34, 0x1D)  # phao đỏ
 
-SOURCE_COLORS = {
-    "github": "#3B5B7A",
-    "hf_models": "#8A5F12",
-    "hf_papers": "#8A5F12",
-    "hackernews": "#B5481B",
-}
-DEFAULT_SOURCE_COLOR = "#4F6B6B"
+DEFAULT_SOURCE_COLOR = sources.DEFAULT_COLOR
 
 DISPLAY_FONTS = ("Bahnschrift SemiBold", "Bahnschrift", "Segoe UI Semibold")
 BODY_FONTS = ("Segoe UI", "Arial")
@@ -57,7 +52,7 @@ def signal_fill(score: float) -> float:
 
 
 def source_color(source: str) -> str:
-    return SOURCE_COLORS.get(source, DEFAULT_SOURCE_COLOR)
+    return sources.info(source).color
 
 
 def relative_time(moment: datetime, now: datetime | None = None) -> str:

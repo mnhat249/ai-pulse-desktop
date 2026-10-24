@@ -11,11 +11,14 @@ import httpx
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
 from app.adapters.base import SourceAdapter, SourceError
+from app.adapters.bluesky import BlueskyAdapter
 from app.adapters.github import GitHubAdapter
 from app.adapters.hackernews import HackerNewsAdapter
 from app.adapters.huggingface import HFModelsAdapter, HFPapersAdapter
+from app.adapters.rss import RSSAdapter
 from app.config import Settings, get_secret
 from app.core.models import RawItem, utcnow
+from app.maintenance import run_maintenance
 from app.pipeline.process import Processor, ProcessResult
 from app.storage.ops import ingest_new_items, record_source_run
 from app.storage.writer import Writer
@@ -25,6 +28,8 @@ logger = logging.getLogger(__name__)
 NewItemsCallback = Callable[[str, list[RawItem]], None]
 ProcessedCallback = Callable[[ProcessResult], None]
 PROCESS_FIRST_RUN_DELAY_SECONDS = 45
+MAINTENANCE_EVERY_HOURS = 24
+MAINTENANCE_FIRST_RUN_MINUTES = 2
 SHUTDOWN_TIMEOUT_SECONDS = 30.0
 
 
@@ -45,12 +50,18 @@ class RunOutcome:
 
 
 def build_adapters(settings: Settings) -> list[SourceAdapter]:
-    return [
-        GitHubAdapter(settings.github, token=get_secret("github")),
-        HFPapersAdapter(settings.huggingface),
-        HFModelsAdapter(settings.huggingface),
-        HackerNewsAdapter(settings.hackernews),
-    ]
+    """Mọi nguồn đang bật trong cài đặt; thêm nguồn mới chỉ cần thêm một dòng ở đây."""
+    adapters: list[SourceAdapter] = []
+    if settings.github.enabled:
+        adapters.append(GitHubAdapter(settings.github, token=get_secret("github")))
+    if settings.huggingface.enabled:
+        adapters += [HFPapersAdapter(settings.huggingface), HFModelsAdapter(settings.huggingface)]
+    if settings.hackernews.enabled:
+        adapters.append(HackerNewsAdapter(settings.hackernews))
+    adapters += [RSSAdapter(feed) for feed in settings.rss if feed.enabled]
+    if settings.bluesky.enabled:
+        adapters.append(BlueskyAdapter(settings.bluesky))
+    return adapters
 
 
 class Radar:
@@ -78,8 +89,20 @@ class Radar:
         self._states = {a.name: SourceState() for a in adapters}
         self._scheduler: AsyncIOScheduler | None = None
         self._inflight: set[asyncio.Task[Any]] = set()
+        self._running: set[str] = set()
 
     async def run_source(self, adapter: SourceAdapter) -> RunOutcome:
+        """Mỗi nguồn chỉ chạy một lần một lúc, nên bấm "Chạy ngay" liên tiếp không chạy trùng."""
+        if adapter.name in self._running:
+            logger.info("Nguồn %s đang chạy, bỏ qua yêu cầu trùng", adapter.name)
+            return RunOutcome(adapter.name, ok=False, new_items=[], skipped=True)
+        self._running.add(adapter.name)
+        try:
+            return await self._run_source(adapter)
+        finally:
+            self._running.discard(adapter.name)
+
+    async def _run_source(self, adapter: SourceAdapter) -> RunOutcome:
         state = self._states[adapter.name]
         started = utcnow()
         if state.suspended_until is not None:
@@ -179,6 +202,23 @@ class Radar:
             if task is not None:
                 self._inflight.discard(task)
 
+    async def maintain(self) -> None:
+        """Dọn cụm cũ, sao lưu, VACUUM (xem app/maintenance.py); lỗi chỉ được log."""
+        try:
+            await run_maintenance(self._settings, self._writer)
+        except Exception:
+            logger.exception("Bảo trì lỗi; thử lại lần sau")
+
+    async def _maintenance_job(self) -> None:
+        task = asyncio.current_task()
+        if task is not None:
+            self._inflight.add(task)
+        try:
+            await self.maintain()
+        finally:
+            if task is not None:
+                self._inflight.discard(task)
+
     async def run_now(self) -> ProcessResult | None:
         """Quét mọi nguồn ngay rồi xử lý (nút "Chạy ngay" của tray)."""
         await self.run_once()
@@ -221,6 +261,15 @@ class Radar:
                 max_instances=1,
                 coalesce=True,
             )
+        scheduler.add_job(
+            self._maintenance_job,
+            "interval",
+            hours=MAINTENANCE_EVERY_HOURS,
+            id="maintenance",
+            next_run_time=utcnow() + timedelta(minutes=MAINTENANCE_FIRST_RUN_MINUTES),
+            max_instances=1,
+            coalesce=True,
+        )
         scheduler.start()
         self._scheduler = scheduler
         self._paused = False

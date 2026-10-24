@@ -46,6 +46,7 @@ def test_migration_creates_all_tables_matching_models(tmp_path: Path) -> None:
         "llm_usage",
         "item_keys",
         "item_embeddings",
+        "seen_items",
     }
     with sync.connect() as conn:
         diff = compare_metadata(MigrationContext.configure(conn), metadata)

@@ -16,8 +16,8 @@ Chú giải: `[x]` xong và đã kiểm (test/chạy thật) · `[~]` code đã 
 | 1. Nguồn API đầu tiên | Xong code | Chưa đạt | Chạy thật 4 nguồn lưu 370 bài, lần 2 không trùng. Chưa chạy 24 giờ liên tục *(cần bạn)* |
 | 2. Xử lý tin | Xong code | Chưa đạt | Chuẩn hóa URL, gán cụm 2 tầng, lọc rác luật, tóm tắt LLM theo lô, quota, xếp hạng, công cụ `export-pairs` / đo F1 / đo rác đều có test. Thiếu dữ liệu thật: gán nhãn tay, khóa Gemini/Groq, model fastembed chưa tải *(cần bạn)* |
 | 3. Giao diện (MVP) | Xong code | Chưa đạt | Widget, tray, toast, đã đọc/bookmark, bộ lọc, tình trạng nguồn, chỉ một bản, thoát sạch. Chưa dùng thật 3 ngày *(cần bạn)* |
-| 4. Thêm nguồn | Chưa bắt đầu | — | — |
-| 5. Hoàn thiện | Chưa bắt đầu | — | — |
+| 4. Thêm nguồn | Xong code | Đạt (bằng test) | RSS (AINews, HF blog, OpenAI, DeepMind, Google AI) và Bluesky; thêm nguồn không phải sửa `pipeline/` hay `ui/` (có test giữ điều này). Reddit bỏ vì chưa có đơn duyệt; sổ `x-missed.md` cần bạn ghi 2 tuần |
+| 5. Hoàn thiện | Xong code | Chưa đạt | Đóng gói `.exe`, shortcut Startup, dọn dữ liệu + sao lưu + VACUUM, màn hình cài đặt, README. Chưa thử cài và chạy trên máy Windows sạch *(cần bạn; thử bằng Windows Sandbox)* |
 
 Code MVP (giai đoạn 0–3) đã xong; `python scripts/check.py` xanh với 280 test. Chưa commit: toàn bộ thay đổi đang nằm trong worktree `mvp` (nhánh `worktree-mvp`); hook pre-commit đang bị chặn vì Python msys thiếu ruff.
 
@@ -338,14 +338,16 @@ Kết quả: app chạy ngầm thật sự, đọc tin trên widget, có icon kh
 
 Kết quả: phủ thêm tin từ blog, X (gián tiếp), Bluesky và Reddit. Đây cũng là bài kiểm tra kiến trúc: thêm nguồn mà không phải đụng vào pipeline hay giao diện.
 
-- [ ] `adapters/rss.py` dùng chung cho mọi feed; danh sách feed để trong file cài đặt
-- [ ] Thêm feed: blog các lab AI, HF blog, AINews (`news.smol.ai/rss.xml`), blog/Substack cá nhân của những người bạn theo dõi trên X
-- [ ] `adapters/bluesky.py`: `getAuthorFeed` trên `public.api.bsky.app` cho danh sách handle
-- [ ] `adapters/reddit.py` qua OAuth (nếu đơn đã được duyệt): `r/LocalLLaMA`, `r/MachineLearning`
-- [ ] (Tùy chọn) ArXiv API theo từ khóa riêng của bạn
-- [ ] Bắt đầu sổ `docs/x-missed.md`: 2 tuần, ghi mỗi tin quan trọng thấy trên X mà app không có
+- [x] `adapters/rss.py` dùng chung cho mọi feed; danh sách feed để trong file cài đặt — *`adapters/rss.py`, mỗi feed là một nguồn `rss_<tên>`; có test với feed thật (hf_blog, ainews, deepmind)*
+- [x] Thêm feed: blog các lab AI, HF blog, AINews (`news.smol.ai/rss.xml`), blog/Substack cá nhân của những người bạn theo dõi trên X — *mặc định: AINews, HF blog, OpenAI, DeepMind, Google AI; Anthropic chưa có RSS chính thức (404); thêm feed riêng bằng một mục `[[rss]]`*
+- [x] `adapters/bluesky.py`: `getAuthorFeed` trên `public.api.bsky.app` cho danh sách handle — *`adapters/bluesky.py`; mặc định 5 tài khoản, lọc theo từ khóa AI; test với phản hồi thật*
+- [ ] `adapters/reddit.py` qua OAuth (nếu đơn đã được duyệt): `r/LocalLLaMA`, `r/MachineLearning` — *bỏ qua theo lựa chọn: chưa có đơn Reddit được duyệt (cần bạn)*
+- [ ] (Tùy chọn) ArXiv API theo từ khóa riêng của bạn — *chưa làm (tùy chọn)*
+- [x] Bắt đầu sổ `docs/x-missed.md`: 2 tuần, ghi mỗi tin quan trọng thấy trên X mà app không có — *sổ đã tạo, 2 tuần ghi chép là việc của bạn*
 
 > **Cổng:** mỗi nguồn mới chỉ cần 1 file adapter + 1 fixture + 1 dòng cài đặt. Không sửa file nào trong `pipeline/` hay `ui/`.
+>
+> **Trạng thái: đạt (kiểm bằng test).** `RSSAdapter` và `BlueskyAdapter` có fixture thật và nằm trong test hợp đồng chung; `test_a_brand_new_source_works_end_to_end_with_only_a_registration` thêm một nguồn giả chỉ bằng `register(...)` và chạy hết pipeline; `test_pipeline_and_ui_contain_no_per_source_code` quét `pipeline/` và `ui/` không có so sánh tên nguồn. Còn lại cần bạn: ghi `docs/x-missed.md` 2 tuần rồi quyết định có làm module X; Reddit khi có đơn duyệt.
 
 ---
 
@@ -353,15 +355,17 @@ Kết quả: phủ thêm tin từ blog, X (gián tiếp), Bluesky và Reddit. Đ
 
 Kết quả: app tự chạy khi bật máy, tự dọn dữ liệu, không cần mở terminal nữa.
 
-- [ ] Đóng gói bằng PyInstaller (dạng thư mục, không hiện cửa sổ console, có icon)
-- [ ] Model embedding tải về lần chạy đầu, lưu ở `%APPDATA%`, không nhét vào file đóng gói
-- [ ] Tự khởi động cùng Windows: tạo shortcut trong thư mục Startup; bật/tắt trong cài đặt
-- [ ] Dọn dữ liệu: xóa cụm cũ hơn 30 ngày (trừ bookmark), `VACUUM` mỗi tuần, giữ 7 bản sao lưu DB
-- [ ] Màn hình cài đặt đơn giản: chu kỳ quét, ngưỡng toast, bật/tắt từng nguồn
-- [ ] README: cài đặt, lưu key, kiến trúc, cách thêm nguồn mới
+- [x] Đóng gói bằng PyInstaller (dạng thư mục, không hiện cửa sổ console, có icon) — *`scripts/build_exe.py` + `packaging/neuralradar.spec`; ra `dist/NeuralRadar/` (178 MB). Đã chạy thử `NeuralRadar.exe` ở thư mục dữ liệu tạm: migration, prompt, scheduler, RSS, Bluesky và vòng xử lý đều chạy; chưa thử trên máy Windows sạch*
+- [x] Model embedding tải về lần chạy đầu, lưu ở `%APPDATA%`, không nhét vào file đóng gói — *model nằm ở thư mục dữ liệu, không đóng gói vào spec*
+- [x] Tự khởi động cùng Windows: tạo shortcut trong thư mục Startup; bật/tắt trong cài đặt — *`app/startup.py` (PowerShell + WScript.Shell), bật/tắt trong cài đặt; đã thử thật: tạo rồi xóa shortcut Startup*
+- [x] Dọn dữ liệu: xóa cụm cũ hơn 30 ngày (trừ bookmark), `VACUUM` mỗi tuần, giữ 7 bản sao lưu DB — *`app/maintenance.py`, job chạy mỗi 24 giờ; có test (giữ bookmark, giữ 7 bản sao lưu, VACUUM)*
+- [x] Màn hình cài đặt đơn giản: chu kỳ quét, ngưỡng toast, bật/tắt từng nguồn — *nút "Cài đặt" trên widget; ghi `settings.toml`, thay đổi áp dụng khi mở lại app*
+- [x] README: cài đặt, lưu key, kiến trúc, cách thêm nguồn mới — *README đã viết lại*
 - [ ] Xem sổ `x-missed.md`: quyết định có làm module X riêng hay không
 
 > **Cổng:** cài và chạy được trên 1 máy Windows sạch. Có thể thử bằng Windows Sandbox có sẵn trong Windows Pro.
+>
+> **Trạng thái: chưa đạt.** Đã có: `NeuralRadar.exe` chạy được trên máy phát triển (xem mục đóng gói), shortcut Startup tạo/xóa được thật, README. Chưa thử trên máy Windows sạch *(cần bạn)*; một việc cần để ý khi thử: lần chạy đầu tải model embedding khoảng 500 MB.
 
 ---
 

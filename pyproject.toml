@@ -21,6 +21,8 @@ dependencies = [
     "pystray>=0.19",
     "Pillow>=10.0",
     "winotify>=1.1; sys_platform == 'win32'",
+    "feedparser>=6.0",
+    "tomli-w>=1.0",
 ]
 
 [project.optional-dependencies]
@@ -32,6 +34,7 @@ dev = [
     "mypy>=1.11",
     "pre-commit>=3.8",
     "scikit-learn>=1.5",
+    "pyinstaller>=6.10",
 ]
 
 [build-system]
@@ -65,7 +68,7 @@ strict = true
 plugins = ["pydantic.mypy"]
 
 [[tool.mypy.overrides]]
-module = ["apscheduler.*", "keyring.*", "alembic.*", "sklearn.*", "customtkinter.*", "pystray.*", "winotify.*"]
+module = ["apscheduler.*", "keyring.*", "alembic.*", "sklearn.*", "customtkinter.*", "pystray.*", "winotify.*", "feedparser.*"]
 ignore_missing_imports = true
 
 [tool.pytest.ini_options]

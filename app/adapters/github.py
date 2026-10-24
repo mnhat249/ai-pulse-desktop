@@ -15,8 +15,11 @@ from app.adapters.base import (
 )
 from app.config import GitHubSettings
 from app.core.models import RawItem, utcnow
+from app.core.sources import SourceInfo, register
 
 SEARCH_URL = "https://api.github.com/search/repositories"
+
+register(SourceInfo("github", "GitHub", "#3B5B7A", rank=0, heat_metric="stars_per_24h"))
 
 
 def build_item(repo: dict[str, Any]) -> RawItem:

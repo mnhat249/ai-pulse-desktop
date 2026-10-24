@@ -7,9 +7,13 @@ import httpx
 from app.adapters.base import SourceError, parse_datetime, parse_items, parse_json, request
 from app.config import HuggingFaceSettings
 from app.core.models import RawItem
+from app.core.sources import SourceInfo, register
 
 PAPERS_URL = "https://huggingface.co/api/daily_papers"
 MODELS_URL = "https://huggingface.co/api/models"
+
+register(SourceInfo("hf_models", "HF", "#8A5F12", rank=1, heat_metric="trendingScore"))
+register(SourceInfo("hf_papers", "HF", "#8A5F12", rank=2, heat_metric="upvotes"))
 
 
 def build_paper(entry: dict[str, Any]) -> RawItem:
