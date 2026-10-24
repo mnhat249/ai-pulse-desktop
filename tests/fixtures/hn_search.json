@@ -1,0 +1,261 @@
+{
+ "exhaustive": {
+  "nbHits": false,
+  "typo": false
+ },
+ "exhaustiveNbHits": false,
+ "exhaustiveTypo": false,
+ "hits": [
+  {
+   "_highlightResult": {
+    "author": {
+     "matchLevel": "none",
+     "matchedWords": [],
+     "value": "dabinat"
+    },
+    "title": {
+     "fullyHighlighted": false,
+     "matchLevel": "full",
+     "matchedWords": [
+      "llm"
+     ],
+     "value": "UN says breaching 1.5C warming <em>lim</em>it is 'imminent and unavoidable'"
+    },
+    "url": {
+     "matchLevel": "none",
+     "matchedWords": [],
+     "value": "https://www.cnn.com/2026/10/21/climate/cop31-un-climate-report-emissions-gap"
+    }
+   },
+   "_tags": [
+    "story",
+    "author_dabinat",
+    "story_50202609"
+   ],
+   "author": "dabinat",
+   "children": [
+    50202929,
+    50204383,
+    50203888,
+    50209443,
+    50204070,
+    50204693,
+    50203724,
+    50202868,
+    50202732,
+    50208128
+   ],
+   "created_at": "2026-10-22T23:37:50Z",
+   "created_at_i": 1792712270,
+   "num_comments": 29,
+   "objectID": "50202609",
+   "points": 50,
+   "story_id": 50202609,
+   "title": "UN says breaching 1.5C warming limit is 'imminent and unavoidable'",
+   "updated_at": "2026-10-23T16:29:12Z",
+   "url": "https://www.cnn.com/2026/10/21/climate/cop31-un-climate-report-emissions-gap"
+  },
+  {
+   "_highlightResult": {
+    "author": {
+     "matchLevel": "none",
+     "matchedWords": [],
+     "value": "johnbender"
+    },
+    "title": {
+     "fullyHighlighted": false,
+     "matchLevel": "full",
+     "matchedWords": [
+      "llm"
+     ],
+     "value": "<em>LLM</em>s are making formal software verification feasible at a much larger scale"
+    },
+    "url": {
+     "matchLevel": "none",
+     "matchedWords": [],
+     "value": "https://www.anthropic.com/research/formal-verification"
+    }
+   },
+   "_tags": [
+    "story",
+    "author_johnbender",
+    "story_50202217"
+   ],
+   "author": "johnbender",
+   "children": [
+    50205704,
+    50203167,
+    50211191,
+    50204590,
+    50205061,
+    50203476,
+    50203078,
+    50202573,
+    50202940,
+    50203454,
+    50203196,
+    50211401,
+    50203722,
+    50203069,
+    50204788,
+    50206002,
+    50203633,
+    50205732,
+    50204781,
+    50204026,
+    50203134,
+    50202913,
+    50203374,
+    50203548,
+    50209079,
+    50204969,
+    50206122,
+    50203246,
+    50206083,
+    50203201,
+    50204331,
+    50203143,
+    50203335,
+    50202899,
+    50208865,
+    50208636,
+    50205137,
+    50205297,
+    50203173,
+    50203692,
+    50203117,
+    50207027,
+    50205905,
+    50204786,
+    50203801,
+    50203921,
+    50204016,
+    50208095,
+    50206288,
+    50204037,
+    50202881,
+    50205363,
+    50204320,
+    50204042,
+    50203932,
+    50202935,
+    50204174
+   ],
+   "created_at": "2026-10-22T22:54:43Z",
+   "created_at_i": 1792709683,
+   "num_comments": 249,
+   "objectID": "50202217",
+   "points": 404,
+   "story_id": 50202217,
+   "title": "LLMs are making formal software verification feasible at a much larger scale",
+   "updated_at": "2026-10-23T16:26:27Z",
+   "url": "https://www.anthropic.com/research/formal-verification"
+  },
+  {
+   "_highlightResult": {
+    "author": {
+     "matchLevel": "none",
+     "matchedWords": [],
+     "value": "jimauthors"
+    },
+    "title": {
+     "fullyHighlighted": false,
+     "matchLevel": "full",
+     "matchedWords": [
+      "llm"
+     ],
+     "value": "Using <em>LLM</em> for confidence scoring is a bad idea"
+    },
+    "url": {
+     "fullyHighlighted": false,
+     "matchLevel": "full",
+     "matchedWords": [
+      "llm"
+     ],
+     "value": "https://rumple.github.io/blog/2026/10/20/asking-<em>llm</em>-for-confidence.html"
+    }
+   },
+   "_tags": [
+    "story",
+    "author_jimauthors",
+    "story_50176082"
+   ],
+   "author": "jimauthors",
+   "children": [
+    50192184,
+    50190926,
+    50196505,
+    50195466,
+    50190873,
+    50195084,
+    50191038,
+    50190683,
+    50193310,
+    50191228,
+    50190983,
+    50190976,
+    50196607,
+    50194834,
+    50195010,
+    50195352,
+    50190897,
+    50196987,
+    50198780,
+    50193245,
+    50190937,
+    50194236,
+    50193664,
+    50202410,
+    50191764,
+    50193102,
+    50190758,
+    50192216,
+    50193881,
+    50195465,
+    50195982,
+    50195423,
+    50196921,
+    50195551,
+    50191781,
+    50194548,
+    50193258,
+    50198322,
+    50192232,
+    50192436,
+    50195520,
+    50198132,
+    50193777,
+    50191337,
+    50190832
+   ],
+   "created_at": "2026-10-21T04:27:51Z",
+   "created_at_i": 1792556871,
+   "num_comments": 100,
+   "objectID": "50176082",
+   "points": 214,
+   "story_id": 50176082,
+   "title": "Using LLM for confidence scoring is a bad idea",
+   "updated_at": "2026-10-23T16:27:26Z",
+   "url": "https://rumple.github.io/blog/2026/10/20/asking-llm-for-confidence.html"
+  }
+ ],
+ "hitsPerPage": 3,
+ "nbHits": 13,
+ "nbPages": 5,
+ "page": 0,
+ "params": "query=llm&tags=story&restrictSearchableAttributes=title&numericFilters=points%3E%3D50%2Ccreated_at_i%3E1792168215&hitsPerPage=3&advancedSyntax=true&analyticsTags=backend",
+ "processingTimeMS": 8,
+ "processingTimingsMS": {
+  "_request": {
+   "queue": 9,
+   "roundTrip": 19
+  },
+  "fetch": {
+   "query": 6,
+   "total": 7
+  },
+  "total": 8
+ },
+ "query": "llm",
+ "serverTimeMS": 17
+}

@@ -16,6 +16,7 @@ Xong việc: merge qua PR, rồi `git worktree remove ../aipulse-<task>` (Claude
 | C | tester | Chạy test, debug |
 | D | reviewer | Review độc lập (session mới) |
 | E | doc-updater | Docs + changelog |
+| F | frontend-skill-installer | Cài/cập nhật skill `frontend-design` (chỉ khi được yêu cầu; chỉ tải từ repo anthropics/claude-code) |
 
 ## Review chéo
 Sau khi xong, mở **session Claude mới**, chạy `/review-pr`. Session đó chưa thấy code lúc viết nên soi lỗi tốt hơn.
