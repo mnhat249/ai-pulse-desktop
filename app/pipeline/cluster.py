@@ -10,6 +10,7 @@ from sqlalchemy.dialects.sqlite import insert as sqlite_insert
 from sqlalchemy.ext.asyncio import AsyncConnection
 
 from app.config import DedupSettings, NoiseSettings, RankingSettings
+from app.core import sources
 from app.pipeline.embeddings import Vector, from_bytes, to_bytes
 from app.pipeline.noise import noise_reason
 from app.pipeline.normalize import canonical_key, extract_links
@@ -27,7 +28,6 @@ from app.storage.tables import (
 )
 
 STRONG_PREFIXES = ("github:", "arxiv:", "hf:")
-PRIMARY_RANK = {"github": 0, "hf_models": 1, "hf_papers": 2, "hackernews": 3}
 LOAD_LIMIT = 500
 
 
@@ -277,7 +277,7 @@ async def refresh_cluster(
         reason = "; ".join(dict.fromkeys(r for r in reasons if r))
     elif llm_noise and digest:
         reason = digest.get("noise_reason")
-    best = min(members, key=lambda m: (PRIMARY_RANK.get(m.source, 99), m.id))
+    best = min(members, key=lambda m: (sources.info(m.source).rank, m.id))
     best_url = (
         await conn.execute(select(raw_items.c.url).where(raw_items.c.id == best.id))
     ).scalar_one()

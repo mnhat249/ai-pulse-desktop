@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from datetime import timedelta
 
+import pytest
 from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncEngine
 
@@ -251,3 +252,42 @@ async def test_rule_noise_marks_cluster_but_a_good_member_saves_it(engine: Async
     assert by_first[("github", "2")]["is_noise"] is True
     assert by_first[("github", "3")]["is_noise"] is False
     assert member_count(by_first[("github", "3")]) == 2
+
+
+async def test_backfill_adds_embeddings_to_items_clustered_before_the_model_existed(
+    engine: AsyncEngine, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    from app.pipeline import process as process_module
+    from app.pipeline.process import Processor
+
+    items = [gh(str(i), f"acme/tool{i}", f"tool number {i} agent") for i in range(5)]
+    proc, writer = await make(engine, items)  # chưa có embedder: bài được gom nhưng không có vector
+    await proc.run()
+    assert await count_embeddings(engine) == 0
+    monkeypatch.setattr(process_module, "BACKFILL_BATCH", 2)
+    with_model = Processor(Settings(), engine, writer, FakeEmbedder(), [])
+    await with_model.run()
+    assert await count_embeddings(engine) == 2  # mỗi vòng một mẻ nhỏ
+    await with_model.run()
+    await with_model.run()
+    assert await count_embeddings(engine) == 5
+    before = len(await all_clusters(engine))
+    await with_model.run()
+    await writer.stop()
+    assert len(await all_clusters(engine)) == before  # bù vector không gom lại bài cũ
+
+
+async def test_backfill_failure_is_logged_and_does_not_break_the_run(engine: AsyncEngine) -> None:
+    from app.pipeline.process import Processor
+
+    proc, writer = await make(engine, [gh("1", "acme/tool")])
+    await proc.run()
+    broken = Processor(Settings(), engine, writer, BrokenEmbedder(), [])
+    result = await broken.run()
+    await writer.stop()
+    assert result.clustered == 0 and await count_embeddings(engine) == 0
+
+
+async def count_embeddings(engine: AsyncEngine) -> int:
+    async with engine.connect() as conn:
+        return len((await conn.execute(select(item_embeddings.c.item_id))).all())

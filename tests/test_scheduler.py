@@ -161,7 +161,7 @@ async def test_start_registers_one_job_per_adapter_and_stop_is_clean(engine: Asy
     radar, writer = await make_radar(engine, fakes)
     radar.start()
     assert radar._scheduler is not None
-    assert {j.id for j in radar._scheduler.get_jobs()} == {"a", "b"}
+    assert {j.id for j in radar._scheduler.get_jobs()} == {"a", "b", "maintenance"}
     await radar.stop()
     await radar.stop()
     await writer.stop()
@@ -212,9 +212,9 @@ async def test_partial_result_is_recorded_as_ok_with_a_note(engine: AsyncEngine)
     assert radar._states["partial"].consecutive_failures == 0
 
 
-def test_build_adapters_has_the_four_mvp_sources(app_home: Path) -> None:
+def test_build_adapters_starts_with_the_four_mvp_sources(app_home: Path) -> None:
     names = [a.name for a in build_adapters(Settings())]
-    assert names == ["github", "hf_papers", "hf_models", "hackernews"]
+    assert names[:4] == ["github", "hf_papers", "hf_models", "hackernews"]
 
 
 def test_fake_matches_protocol() -> None:
@@ -226,3 +226,26 @@ def test_fake_matches_protocol() -> None:
 def test_default_intervals_within_plan_range(name: str) -> None:
     by_name = {a.name: a for a in build_adapters(Settings())}
     assert 15 <= by_name[name].interval_minutes <= 30
+
+
+async def test_same_source_never_runs_twice_at_once(engine: AsyncEngine) -> None:
+    slow = Fake("slow", [raw(1, "slow")])
+    slow.gate = asyncio.Event()
+    radar, writer = await make_radar(engine, [slow])
+    first = asyncio.create_task(radar.run_source(slow))
+    await slow.started.wait()
+    second = await radar.run_source(slow)  # bấm "Chạy ngay" lần hai khi lần một chưa xong
+    assert second.skipped and slow.calls == 1
+    slow.gate.set()
+    done = await first
+    again = await radar.run_source(slow)  # xong rồi thì chạy lại được
+    await writer.stop()
+    assert done.ok and not again.skipped and slow.calls == 2
+
+
+async def test_run_now_twice_in_a_row_hits_each_source_once(engine: AsyncEngine) -> None:
+    fakes = [Fake("a", [raw(1, "a")]), Fake("b", [raw(2, "b")])]
+    radar, writer = await make_radar(engine, fakes)
+    await asyncio.gather(radar.run_once(), radar.run_once())
+    await writer.stop()
+    assert [f.calls for f in fakes] == [1, 1]

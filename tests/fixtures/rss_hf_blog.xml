@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+ <channel>
+  <atom:link href="https://huggingface.co/blog/feed.xml" rel="self" type="application/rss+xml"/>
+  <title>Hugging Face - Blog</title>
+  <link>https://huggingface.co/blog</link>
+  <description>The Hugging Face blog</description>
+  <language>en-US</language>
+  <item>
+   <title>LitPivot: Developing research ideas through dynamic contextualization within the literature landscape</title>
+   <pubDate>Fri, 23 Oct 2026 16:15:50 GMT</pubDate>
+   <link>https://huggingface.co/blog/allenai/litpivot</link>
+   <guid isPermaLink="false">https://huggingface.co/blog/allenai/litpivot</guid>
+  </item>
+<item>
+   <title>Does Your Model Run on AWS Trainium? Look It Up</title>
+   <pubDate>Fri, 23 Oct 2026 00:00:00 GMT</pubDate>
+   <link>https://huggingface.co/blog/torch-neuronx-model-support</link>
+   <guid isPermaLink="true">https://huggingface.co/blog/torch-neuronx-model-support</guid>
+  </item>
+<item>
+   <title>Turning Database Grading into RL Rewards: Post-Training Agents with ThinkingBox</title>
+   <pubDate>Thu, 22 Oct 2026 22:24:34 GMT</pubDate>
+   <link>https://huggingface.co/blog/microsoft/thinkingbox-training</link>
+   <guid isPermaLink="false">https://huggingface.co/blog/microsoft/thinkingbox-training</guid>
+  </item>
+<item>
+   <title>Ensemble forecasting with IBM Granite time-series models</title>
+   <pubDate>Thu, 22 Oct 2026 07:51:31 GMT</pubDate>
+   <link>https://huggingface.co/blog/ibm-research/granite-timeseries-ensemble-r1</link>
+   <guid isPermaLink="false">https://huggingface.co/blog/ibm-research/granite-timeseries-ensemble-r1</guid>
+  </item>
+</channel></rss>

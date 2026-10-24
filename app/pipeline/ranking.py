@@ -1,24 +1,18 @@
 from __future__ import annotations
 
 from app.config import RankingSettings
+from app.core import sources
 
-HF_PAPERS_UPVOTES_SCALE = 50.0
 SPREAD_FULL_AT_SOURCES = 3
 
 
 def item_heat(source: str, metrics: dict[str, float], settings: RankingSettings) -> float:
-    """Độ "nóng" của một bài, từ 0 đến 1, theo chỉ số riêng của từng nguồn."""
-    if source == "github":
-        raw = metrics.get("stars_per_24h", 0.0) / settings.github_velocity_scale
-    elif source == "hf_models":
-        raw = metrics.get("trendingScore", 0.0) / settings.hf_trending_scale
-    elif source == "hf_papers":
-        raw = metrics.get("upvotes", 0.0) / HF_PAPERS_UPVOTES_SCALE
-    elif source == "hackernews":
-        raw = metrics.get("points", 0.0) / settings.hn_points_scale
-    else:
-        raw = 0.0
-    return max(0.0, min(1.0, raw))
+    """Độ "nóng" của một bài, từ 0 đến 1, theo chỉ số riêng của nguồn (đăng ký ở SourceInfo)."""
+    metric = sources.info(source).heat_metric
+    scale = settings.heat_scales.get(source, 0.0)
+    if metric is None or scale <= 0:
+        return 0.0
+    return max(0.0, min(1.0, metrics.get(metric, 0.0) / scale))
 
 
 def importance_score(

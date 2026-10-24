@@ -9,19 +9,15 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Literal
 
+from app.core import sources
+
 ClusterFilter = Literal["all", "unread", "bookmarked"]
 
-SOURCE_LABELS = {
-    "github": "GitHub",
-    "hf_models": "HF",
-    "hf_papers": "HF",
-    "hackernews": "HN",
-}
 BUSY_TIMEOUT_SECONDS = 5
 
 
 def source_label(source: str) -> str:
-    return SOURCE_LABELS.get(source, source)
+    return sources.info(source).label
 
 
 @dataclass(frozen=True)

@@ -135,3 +135,11 @@ item_embeddings = Table(
     C("model", String(200), nullable=False),
     C("vector", LargeBinary, nullable=False),
 )
+
+seen_items = Table(
+    "seen_items",
+    metadata,
+    C("source", String(40), primary_key=True),
+    C("source_id", String(200), primary_key=True),
+    C("purged_at", UTCDateTime, nullable=False),
+)

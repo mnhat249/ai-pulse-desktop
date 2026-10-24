@@ -58,3 +58,6 @@ async def engine(tmp_path: Path) -> AsyncIterator[AsyncEngine]:
     eng = make_engine(db_path)
     yield eng
     await eng.dispose()
+
+
+from tests.tk_env import env, fresh  # noqa: E402,F401  (fixture giao diện dùng chung)

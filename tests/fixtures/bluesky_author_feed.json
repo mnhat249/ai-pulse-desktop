@@ -1,0 +1,920 @@
+{
+ "feed": [
+  {
+   "post": {
+    "uri": "at://did:plc:kft6lu4trxowqmter2b6vg6z/app.bsky.feed.post/3mykwxawoa22u",
+    "cid": "bafyreibhpq2lwnxslqaxue45xyfxk4h3cbjmou745j43wasoz2ybaxkmqa",
+    "author": {
+     "did": "did:plc:kft6lu4trxowqmter2b6vg6z",
+     "handle": "simonwillison.net",
+     "displayName": "Simon Willison",
+     "avatar": "https://cdn.bsky.app/img/avatar/plain/did:plc:kft6lu4trxowqmter2b6vg6z/bafkreiewl57f52tt6jrd7gtn75edweos7z6bjxsqhottxw4l7zme6o55ma",
+     "associated": {
+      "chat": {
+       "allowIncoming": "following"
+      },
+      "activitySubscription": {
+       "allowSubscriptions": "followers"
+      }
+     },
+     "labels": [],
+     "createdAt": "2023-04-25T16:08:31.603Z",
+     "verification": {
+      "verifications": [
+       {
+        "issuer": "did:plc:z72i7hdynmk6r22z27h6tvur",
+        "issuerDisplayName": "Bluesky",
+        "issuerHandle": "bsky.app",
+        "uri": "at://did:plc:z72i7hdynmk6r22z27h6tvur/app.bsky.graph.verification/3lndpy5yj3c2f",
+        "isValid": true,
+        "createdAt": "2025-04-21T10:49:10.070Z"
+       }
+      ],
+      "verifiedStatus": "valid",
+      "trustedVerifierStatus": "none"
+     }
+    },
+    "record": {
+     "$type": "app.bsky.feed.post",
+     "createdAt": "2026-10-23T19:45:54.167Z",
+     "embed": {
+      "$type": "app.bsky.embed.external",
+      "external": {
+       "description": "Kimi K3.1 Pro landed on the Kimi API today - it's not yet open weights, but Moonshot promise \"Full model weights will be released by Nov 4, 2026\". They're also …",
+       "thumb": {
+        "$type": "blob",
+        "ref": {
+         "$link": "bafkreicbutvae6emhkvhizvtw6jb4ddzjwuds6h5kss6ni4j5q62uwhxvy"
+        },
+        "mimeType": "image/jpeg",
+        "size": 224977
+       },
+       "title": "Introducing Kimi K3.1 Pro",
+       "uri": "https://simonwillison.net/2026/Oct/23/kimi-k31-pro/"
+      }
+     },
+     "facets": [
+      {
+       "features": [
+        {
+         "$type": "app.bsky.richtext.facet#link",
+         "uri": "https://simonwillison.net/2026/Oct/23/kimi-k31-pro/"
+        }
+       ],
+       "index": {
+        "byteEnd": 200,
+        "byteStart": 167
+       }
+      }
+     ],
+     "langs": [
+      "en"
+     ],
+     "text": "Notes on Kimi K3.1 - this one is a big deal, the first time an open weights (well, soon-to-be open weights) model has competed this credibly with the current frontier simonwillison.net/2026/Oct/23/..."
+    },
+    "embed": {
+     "external": {
+      "uri": "https://simonwillison.net/2026/Oct/23/kimi-k31-pro/",
+      "title": "Introducing Kimi K3.1 Pro",
+      "description": "Kimi K3.1 Pro landed on the Kimi API today - it's not yet open weights, but Moonshot promise \"Full model weights will be released by Nov 4, 2026\". They're also …",
+      "thumb": "https://cdn.bsky.app/img/feed_thumbnail/plain/did:plc:kft6lu4trxowqmter2b6vg6z/bafkreicbutvae6emhkvhizvtw6jb4ddzjwuds6h5kss6ni4j5q62uwhxvy"
+     },
+     "$type": "app.bsky.embed.external#view"
+    },
+    "bookmarkCount": 19,
+    "replyCount": 9,
+    "repostCount": 24,
+    "likeCount": 174,
+    "quoteCount": 4,
+    "indexedAt": "2026-10-23T19:45:56.342Z",
+    "labels": []
+   }
+  },
+  {
+   "post": {
+    "uri": "at://did:plc:kft6lu4trxowqmter2b6vg6z/app.bsky.feed.post/3myigjinnjc22",
+    "cid": "bafyreihk7wxriftu2vjskfotzn2gs7gtqby7lduoypdzhm4ubccdaocjea",
+    "author": {
+     "did": "did:plc:kft6lu4trxowqmter2b6vg6z",
+     "handle": "simonwillison.net",
+     "displayName": "Simon Willison",
+     "avatar": "https://cdn.bsky.app/img/avatar/plain/did:plc:kft6lu4trxowqmter2b6vg6z/bafkreiewl57f52tt6jrd7gtn75edweos7z6bjxsqhottxw4l7zme6o55ma",
+     "associated": {
+      "chat": {
+       "allowIncoming": "following"
+      },
+      "activitySubscription": {
+       "allowSubscriptions": "followers"
+      }
+     },
+     "labels": [],
+     "createdAt": "2023-04-25T16:08:31.603Z",
+     "verification": {
+      "verifications": [
+       {
+        "issuer": "did:plc:z72i7hdynmk6r22z27h6tvur",
+        "issuerDisplayName": "Bluesky",
+        "issuerHandle": "bsky.app",
+        "uri": "at://did:plc:z72i7hdynmk6r22z27h6tvur/app.bsky.graph.verification/3lndpy5yj3c2f",
+        "isValid": true,
+        "createdAt": "2025-04-21T10:49:10.070Z"
+       }
+      ],
+      "verifiedStatus": "valid",
+      "trustedVerifierStatus": "none"
+     }
+    },
+    "record": {
+     "$type": "app.bsky.feed.post",
+     "createdAt": "2026-10-22T19:46:33.153Z",
+     "embed": {
+      "$type": "app.bsky.embed.video",
+      "alt": "A man sits in a moving car at night, he looks out of the window and sees a pelican riding a bicycle",
+      "aspectRatio": {
+       "height": 720,
+       "width": 1280
+      },
+      "presentation": "default",
+      "video": {
+       "$type": "blob",
+       "ref": {
+        "$link": "bafkreiddvqscfq2qvncrwnzlpovj4xza5wgtxilqajwpxgcy7mbah33idq"
+       },
+       "mimeType": "video/mp4",
+       "size": 522314
+      }
+     },
+     "facets": [
+      {
+       "features": [
+        {
+         "$type": "app.bsky.richtext.facet#link",
+         "uri": "https://www.youtube.com/watch?v=hKO4pQtIXow"
+        }
+       ],
+       "index": {
+        "byteEnd": 117,
+        "byteStart": 86
+       }
+      }
+     ],
+     "langs": [
+      "en"
+     ],
+     "text": "Spotted a familiar creature at 00:45s in this new music video for FREEDOM by De Staad www.youtube.com/watch?v=hKO4..."
+    },
+    "embed": {
+     "cid": "bafkreiddvqscfq2qvncrwnzlpovj4xza5wgtxilqajwpxgcy7mbah33idq",
+     "playlist": "https://video.bsky.app/watch/did%3Aplc%3Akft6lu4trxowqmter2b6vg6z/bafkreiddvqscfq2qvncrwnzlpovj4xza5wgtxilqajwpxgcy7mbah33idq/playlist.m3u8",
+     "thumbnail": "https://video.bsky.app/watch/did%3Aplc%3Akft6lu4trxowqmter2b6vg6z/bafkreiddvqscfq2qvncrwnzlpovj4xza5wgtxilqajwpxgcy7mbah33idq/thumbnail.jpg",
+     "alt": "A man sits in a moving car at night, he looks out of the window and sees a pelican riding a bicycle",
+     "aspectRatio": {
+      "height": 720,
+      "width": 1280
+     },
+     "presentation": "default",
+     "$type": "app.bsky.embed.video#view"
+    },
+    "bookmarkCount": 5,
+    "replyCount": 10,
+    "repostCount": 15,
+    "likeCount": 209,
+    "quoteCount": 0,
+    "indexedAt": "2026-10-22T19:46:34.043Z",
+    "labels": []
+   }
+  },
+  {
+   "post": {
+    "uri": "at://did:plc:kft6lu4trxowqmter2b6vg6z/app.bsky.feed.post/3myfmdrox3k2u",
+    "cid": "bafyreiazrc6irevzzt52wbohdxj72vium6svhjrfegrfvyiwjzpv2ecyp4",
+    "author": {
+     "did": "did:plc:kft6lu4trxowqmter2b6vg6z",
+     "handle": "simonwillison.net",
+     "displayName": "Simon Willison",
+     "avatar": "https://cdn.bsky.app/img/avatar/plain/did:plc:kft6lu4trxowqmter2b6vg6z/bafkreiewl57f52tt6jrd7gtn75edweos7z6bjxsqhottxw4l7zme6o55ma",
+     "associated": {
+      "chat": {
+       "allowIncoming": "following"
+      },
+      "activitySubscription": {
+       "allowSubscriptions": "followers"
+      }
+     },
+     "labels": [],
+     "createdAt": "2023-04-25T16:08:31.603Z",
+     "verification": {
+      "verifications": [
+       {
+        "issuer": "did:plc:z72i7hdynmk6r22z27h6tvur",
+        "issuerDisplayName": "Bluesky",
+        "issuerHandle": "bsky.app",
+        "uri": "at://did:plc:z72i7hdynmk6r22z27h6tvur/app.bsky.graph.verification/3lndpy5yj3c2f",
+        "isValid": true,
+        "createdAt": "2025-04-21T10:49:10.070Z"
+       }
+      ],
+      "verifiedStatus": "valid",
+      "trustedVerifierStatus": "none"
+     }
+    },
+    "record": {
+     "$type": "app.bsky.feed.post",
+     "createdAt": "2026-10-21T16:52:44.533Z",
+     "embed": {
+      "$type": "app.bsky.embed.recordWithMedia",
+      "media": {
+       "$type": "app.bsky.embed.images",
+       "images": [
+        {
+         "alt": "The new steampunk version, more gold, french architecture, steampunk aesthetic ",
+         "aspectRatio": {
+          "height": 947,
+          "width": 1421
+         },
+         "image": {
+          "$type": "blob",
+          "ref": {
+           "$link": "bafkreichfirlpysobqubzs67akobyq2jgog7ec4327qigcxwq4scslyysy"
+          },
+          "mimeType": "image/jpeg",
+          "size": 1042830
+         }
+        },
+        {
+         "alt": "On the left is the original blue robot goliath model - in the right the new gold steqmpunk one ",
+         "aspectRatio": {
+          "height": 872,
+          "width": 1804
+         },
+         "image": {
+          "$type": "blob",
+          "ref": {
+           "$link": "bafkreib6h2722gc3ipwmv7lggpfqddzg7f42ftmqcnxccku3mbeu4xe7vu"
+          },
+          "mimeType": "image/jpeg",
+          "size": 683821
+         }
+        }
+       ]
+      },
+      "record": {
+       "$type": "app.bsky.embed.record",
+       "record": {
+        "cid": "bafyreidv5g6kvgiot4aqg6qmf2nho45mlpchhaf7jrksokzbp3o5q4ifae",
+        "uri": "at://did:plc:kft6lu4trxowqmter2b6vg6z/app.bsky.feed.post/3mydffvspjs2x"
+       }
+      }
+     },
+     "facets": [
+      {
+       "features": [
+        {
+         "$type": "app.bsky.richtext.facet#link",
+         "uri": "https://simonwillison.net/2026/Oct/21/panache/"
+        }
+       ],
+       "index": {
+        "byteEnd": 160,
+        "byteStart": 127
+       }
+      }
+     ],
+     "langs": [
+      "en"
+     ],
+     "text": "It's been less than 24 hours and there's already a French fork of Battle Drones that reimagines it as Belle Époque steampunk! simonwillison.net/2026/Oct/21/..."
+    },
+    "embed": {
+     "media": {
+      "images": [
+       {
+        "thumb": "https://cdn.bsky.app/img/feed_thumbnail/plain/did:plc:kft6lu4trxowqmter2b6vg6z/bafkreichfirlpysobqubzs67akobyq2jgog7ec4327qigcxwq4scslyysy",
+        "fullsize": "https://cdn.bsky.app/img/feed_fullsize/plain/did:plc:kft6lu4trxowqmter2b6vg6z/bafkreichfirlpysobqubzs67akobyq2jgog7ec4327qigcxwq4scslyysy",
+        "alt": "The new steampunk version, more gold, french architecture, steampunk aesthetic ",
+        "aspectRatio": {
+         "height": 947,
+         "width": 1421
+        }
+       },
+       {
+        "thumb": "https://cdn.bsky.app/img/feed_thumbnail/plain/did:plc:kft6lu4trxowqmter2b6vg6z/bafkreib6h2722gc3ipwmv7lggpfqddzg7f42ftmqcnxccku3mbeu4xe7vu",
+        "fullsize": "https://cdn.bsky.app/img/feed_fullsize/plain/did:plc:kft6lu4trxowqmter2b6vg6z/bafkreib6h2722gc3ipwmv7lggpfqddzg7f42ftmqcnxccku3mbeu4xe7vu",
+        "alt": "On the left is the original blue robot goliath model - in the right the new gold steqmpunk one ",
+        "aspectRatio": {
+         "height": 872,
+         "width": 1804
+        }
+       }
+      ],
+      "$type": "app.bsky.embed.images#view"
+     },
+     "record": {
+      "record": {
+       "uri": "at://did:plc:kft6lu4trxowqmter2b6vg6z/app.bsky.feed.post/3mydffvspjs2x",
+       "cid": "bafyreidv5g6kvgiot4aqg6qmf2nho45mlpchhaf7jrksokzbp3o5q4ifae",
+       "author": {
+        "did": "did:plc:kft6lu4trxowqmter2b6vg6z",
+        "handle": "simonwillison.net",
+        "displayName": "Simon Willison",
+        "avatar": "https://cdn.bsky.app/img/avatar/plain/did:plc:kft6lu4trxowqmter2b6vg6z/bafkreiewl57f52tt6jrd7gtn75edweos7z6bjxsqhottxw4l7zme6o55ma",
+        "associated": {
+         "chat": {
+          "allowIncoming": "following"
+         },
+         "activitySubscription": {
+          "allowSubscriptions": "followers"
+         }
+        },
+        "labels": [],
+        "createdAt": "2023-04-25T16:08:31.603Z",
+        "verification": {
+         "verifications": [
+          {
+           "issuer": "did:plc:z72i7hdynmk6r22z27h6tvur",
+           "issuerDisplayName": "Bluesky",
+           "issuerHandle": "bsky.app",
+           "uri": "at://did:plc:z72i7hdynmk6r22z27h6tvur/app.bsky.graph.verification/3lndpy5yj3c2f",
+           "isValid": true,
+           "createdAt": "2025-04-21T10:49:10.070Z"
+          }
+         ],
+         "verifiedStatus": "valid",
+         "trustedVerifierStatus": "none"
+        }
+       },
+       "value": {
+        "$type": "app.bsky.feed.post",
+        "createdAt": "2026-10-20T19:43:20.267Z",
+        "embed": {
+         "$type": "app.bsky.embed.images",
+         "images": [
+          {
+           "alt": "Screenshot of a 3D isometric real-time strategy game in progress. HUD at top reads \"1:49\", \"4×\", \"Ironclad · Industry\" (blue dot), \"Boom · Industry\" (red dot), resource icons and \"0:56\", with a blue-versus-red balance bar labeled \"B\" and \"R\". A banner in the center top reads \"DOUBLE KILL\" with \"Blue\" beneath it. The grassy battlefield shows a blue team base in the lower left with a domed command center, a radar dish, two factory buildings and a turret, plus a refinery labeled \"+200\" where blue supply trucks carrying crates gather around ore deposits, with floating \"+45\" labels by the trucks. A gravel road runs diagonally from the base to the upper right, where blue tanks fire a laser at a white enemy unit. Near the base, red enemy tanks under fire show a \"+45\" label, while blue turrets shoot at them. Rocky outcrops sit at the top left and right center, clusters of low-poly trees line the right and bottom edges, and a minimap is in the top right corner. Pause and mute buttons are at the top left, and zoom \"+\" and \"−\" buttons and a lightning bolt button are at the bottom left.",
+           "aspectRatio": {
+            "height": 1117,
+            "width": 1728
+           },
+           "image": {
+            "$type": "blob",
+            "ref": {
+             "$link": "bafkreibglz2yjm65ixdp3pqei2o2vmx5mm5irxhoziuznwr2kgmvujo2om"
+            },
+            "mimeType": "image/jpeg",
+            "size": 1540337
+           }
+          },
+          {
+           "alt": "Screenshot of the same strategy game, now on a snowy winter map in replay mode. HUD at top reads \"6:27\", \"1×\", \"anthropic/claude-haiku-5-5 · industry\" (blue dot), \"gpt-6-luna · industry\" (red dot), resource icons and \"0:03\", with the balance bar labeled \"B\" and \"R\". A note at top left reads \"Blue: Pushing turrets at the enemy's south-east edge.\" A replay panel below the HUD reads \"Blue anthropic/claude-haiku-5-5 · industry vs Red gpt-6-luna · industry · frostbite seed 42\" with a scrubber at \"6:27 / 7:48\" and buttons \"−30s\", \"+30s\", \"All\", \"Blue's eyes\", \"Red's eyes\" and \"Notes\". A frozen lake of cracked ice plates fills the left side. In the lower center a group of blue tanks advances past a snow-covered pine forest toward a line of red turrets along the lake shore, one of them burning. A dark rocky ridge crosses the middle, and the red base with a refinery, other buildings, tanks and supply trucks sits in the upper right. Minimap at top right, zoom and lightning buttons at bottom left.",
+           "aspectRatio": {
+            "height": 870,
+            "width": 1275
+           },
+           "image": {
+            "$type": "blob",
+            "ref": {
+             "$link": "bafkreiab6mo7ig5nzlklebglyd2gldanbtbx6zkhcqjawedttanryd32sq"
+            },
+            "mimeType": "image/jpeg",
+            "size": 813996
+           }
+          }
+         ]
+        },
+        "facets": [
+         {
+          "features": [
+           {
+            "$type": "app.bsky.richtext.facet#link",
+            "uri": "https://simonwillison.net/2026/Oct/20/battledrones/"
+           }
+          ],
+          "index": {
+           "byteEnd": 210,
+           "byteStart": 177
+          }
+         }
+        ],
+        "langs": [
+         "en"
+        ],
+        "text": "I built a Command & Conquer style RTS called Battle Drones, mainly using Claude Opus 5.5, which runs in the browser and includes device-to-device multiplayer over an audio link simonwillison.net/2026/Oct/20/..."
+       },
+       "labels": [],
+       "likeCount": 277,
+       "replyCount": 35,
+       "repostCount": 19,
+       "quoteCount": 11,
+       "opThreadPostIndex": 1,
+       "opThreadPostCount": 5,
+       "indexedAt": "2026-10-20T19:43:24.538Z",
+       "embeds": [
+        {
+         "images": [
+          {
+           "thumb": "https://cdn.bsky.app/img/feed_thumbnail/plain/did:plc:kft6lu4trxowqmter2b6vg6z/bafkreibglz2yjm65ixdp3pqei2o2vmx5mm5irxhoziuznwr2kgmvujo2om",
+           "fullsize": "https://cdn.bsky.app/img/feed_fullsize/plain/did:plc:kft6lu4trxowqmter2b6vg6z/bafkreibglz2yjm65ixdp3pqei2o2vmx5mm5irxhoziuznwr2kgmvujo2om",
+           "alt": "Screenshot of a 3D isometric real-time strategy game in progress. HUD at top reads \"1:49\", \"4×\", \"Ironclad · Industry\" (blue dot), \"Boom · Industry\" (red dot), resource icons and \"0:56\", with a blue-versus-red balance bar labeled \"B\" and \"R\". A banner in the center top reads \"DOUBLE KILL\" with \"Blue\" beneath it. The grassy battlefield shows a blue team base in the lower left with a domed command center, a radar dish, two factory buildings and a turret, plus a refinery labeled \"+200\" where blue supply trucks carrying crates gather around ore deposits, with floating \"+45\" labels by the trucks. A gravel road runs diagonally from the base to the upper right, where blue tanks fire a laser at a white enemy unit. Near the base, red enemy tanks under fire show a \"+45\" label, while blue turrets shoot at them. Rocky outcrops sit at the top left and right center, clusters of low-poly trees line the right and bottom edges, and a minimap is in the top right corner. Pause and mute buttons are at the top left, and zoom \"+\" and \"−\" buttons and a lightning bolt button are at the bottom left.",
+           "aspectRatio": {
+            "height": 1117,
+            "width": 1728
+           }
+          },
+          {
+           "thumb": "https://cdn.bsky.app/img/feed_thumbnail/plain/did:plc:kft6lu4trxowqmter2b6vg6z/bafkreiab6mo7ig5nzlklebglyd2gldanbtbx6zkhcqjawedttanryd32sq",
+           "fullsize": "https://cdn.bsky.app/img/feed_fullsize/plain/did:plc:kft6lu4trxowqmter2b6vg6z/bafkreiab6mo7ig5nzlklebglyd2gldanbtbx6zkhcqjawedttanryd32sq",
+           "alt": "Screenshot of the same strategy game, now on a snowy winter map in replay mode. HUD at top reads \"6:27\", \"1×\", \"anthropic/claude-haiku-5-5 · industry\" (blue dot), \"gpt-6-luna · industry\" (red dot), resource icons and \"0:03\", with the balance bar labeled \"B\" and \"R\". A note at top left reads \"Blue: Pushing turrets at the enemy's south-east edge.\" A replay panel below the HUD reads \"Blue anthropic/claude-haiku-5-5 · industry vs Red gpt-6-luna · industry · frostbite seed 42\" with a scrubber at \"6:27 / 7:48\" and buttons \"−30s\", \"+30s\", \"All\", \"Blue's eyes\", \"Red's eyes\" and \"Notes\". A frozen lake of cracked ice plates fills the left side. In the lower center a group of blue tanks advances past a snow-covered pine forest toward a line of red turrets along the lake shore, one of them burning. A dark rocky ridge crosses the middle, and the red base with a refinery, other buildings, tanks and supply trucks sits in the upper right. Minimap at top right, zoom and lightning buttons at bottom left.",
+           "aspectRatio": {
+            "height": 870,
+            "width": 1275
+           }
+          }
+         ],
+         "$type": "app.bsky.embed.images#view"
+        }
+       ],
+       "$type": "app.bsky.embed.record#viewRecord"
+      }
+     },
+     "$type": "app.bsky.embed.recordWithMedia#view"
+    },
+    "bookmarkCount": 6,
+    "replyCount": 8,
+    "repostCount": 5,
+    "likeCount": 89,
+    "quoteCount": 2,
+    "indexedAt": "2026-10-21T16:52:47.343Z",
+    "labels": []
+   }
+  },
+  {
+   "post": {
+    "uri": "at://did:plc:kft6lu4trxowqmter2b6vg6z/app.bsky.feed.post/3mydffvspjs2x",
+    "cid": "bafyreidv5g6kvgiot4aqg6qmf2nho45mlpchhaf7jrksokzbp3o5q4ifae",
+    "author": {
+     "did": "did:plc:kft6lu4trxowqmter2b6vg6z",
+     "handle": "simonwillison.net",
+     "displayName": "Simon Willison",
+     "avatar": "https://cdn.bsky.app/img/avatar/plain/did:plc:kft6lu4trxowqmter2b6vg6z/bafkreiewl57f52tt6jrd7gtn75edweos7z6bjxsqhottxw4l7zme6o55ma",
+     "associated": {
+      "chat": {
+       "allowIncoming": "following"
+      },
+      "activitySubscription": {
+       "allowSubscriptions": "followers"
+      }
+     },
+     "labels": [],
+     "createdAt": "2023-04-25T16:08:31.603Z",
+     "verification": {
+      "verifications": [
+       {
+        "issuer": "did:plc:z72i7hdynmk6r22z27h6tvur",
+        "issuerDisplayName": "Bluesky",
+        "issuerHandle": "bsky.app",
+        "uri": "at://did:plc:z72i7hdynmk6r22z27h6tvur/app.bsky.graph.verification/3lndpy5yj3c2f",
+        "isValid": true,
+        "createdAt": "2025-04-21T10:49:10.070Z"
+       }
+      ],
+      "verifiedStatus": "valid",
+      "trustedVerifierStatus": "none"
+     }
+    },
+    "record": {
+     "$type": "app.bsky.feed.post",
+     "createdAt": "2026-10-20T19:43:20.267Z",
+     "embed": {
+      "$type": "app.bsky.embed.images",
+      "images": [
+       {
+        "alt": "Screenshot of a 3D isometric real-time strategy game in progress. HUD at top reads \"1:49\", \"4×\", \"Ironclad · Industry\" (blue dot), \"Boom · Industry\" (red dot), resource icons and \"0:56\", with a blue-versus-red balance bar labeled \"B\" and \"R\". A banner in the center top reads \"DOUBLE KILL\" with \"Blue\" beneath it. The grassy battlefield shows a blue team base in the lower left with a domed command center, a radar dish, two factory buildings and a turret, plus a refinery labeled \"+200\" where blue supply trucks carrying crates gather around ore deposits, with floating \"+45\" labels by the trucks. A gravel road runs diagonally from the base to the upper right, where blue tanks fire a laser at a white enemy unit. Near the base, red enemy tanks under fire show a \"+45\" label, while blue turrets shoot at them. Rocky outcrops sit at the top left and right center, clusters of low-poly trees line the right and bottom edges, and a minimap is in the top right corner. Pause and mute buttons are at the top left, and zoom \"+\" and \"−\" buttons and a lightning bolt button are at the bottom left.",
+        "aspectRatio": {
+         "height": 1117,
+         "width": 1728
+        },
+        "image": {
+         "$type": "blob",
+         "ref": {
+          "$link": "bafkreibglz2yjm65ixdp3pqei2o2vmx5mm5irxhoziuznwr2kgmvujo2om"
+         },
+         "mimeType": "image/jpeg",
+         "size": 1540337
+        }
+       },
+       {
+        "alt": "Screenshot of the same strategy game, now on a snowy winter map in replay mode. HUD at top reads \"6:27\", \"1×\", \"anthropic/claude-haiku-5-5 · industry\" (blue dot), \"gpt-6-luna · industry\" (red dot), resource icons and \"0:03\", with the balance bar labeled \"B\" and \"R\". A note at top left reads \"Blue: Pushing turrets at the enemy's south-east edge.\" A replay panel below the HUD reads \"Blue anthropic/claude-haiku-5-5 · industry vs Red gpt-6-luna · industry · frostbite seed 42\" with a scrubber at \"6:27 / 7:48\" and buttons \"−30s\", \"+30s\", \"All\", \"Blue's eyes\", \"Red's eyes\" and \"Notes\". A frozen lake of cracked ice plates fills the left side. In the lower center a group of blue tanks advances past a snow-covered pine forest toward a line of red turrets along the lake shore, one of them burning. A dark rocky ridge crosses the middle, and the red base with a refinery, other buildings, tanks and supply trucks sits in the upper right. Minimap at top right, zoom and lightning buttons at bottom left.",
+        "aspectRatio": {
+         "height": 870,
+         "width": 1275
+        },
+        "image": {
+         "$type": "blob",
+         "ref": {
+          "$link": "bafkreiab6mo7ig5nzlklebglyd2gldanbtbx6zkhcqjawedttanryd32sq"
+         },
+         "mimeType": "image/jpeg",
+         "size": 813996
+        }
+       }
+      ]
+     },
+     "facets": [
+      {
+       "features": [
+        {
+         "$type": "app.bsky.richtext.facet#link",
+         "uri": "https://simonwillison.net/2026/Oct/20/battledrones/"
+        }
+       ],
+       "index": {
+        "byteEnd": 210,
+        "byteStart": 177
+       }
+      }
+     ],
+     "langs": [
+      "en"
+     ],
+     "text": "I built a Command & Conquer style RTS called Battle Drones, mainly using Claude Opus 5.5, which runs in the browser and includes device-to-device multiplayer over an audio link simonwillison.net/2026/Oct/20/..."
+    },
+    "embed": {
+     "images": [
+      {
+       "thumb": "https://cdn.bsky.app/img/feed_thumbnail/plain/did:plc:kft6lu4trxowqmter2b6vg6z/bafkreibglz2yjm65ixdp3pqei2o2vmx5mm5irxhoziuznwr2kgmvujo2om",
+       "fullsize": "https://cdn.bsky.app/img/feed_fullsize/plain/did:plc:kft6lu4trxowqmter2b6vg6z/bafkreibglz2yjm65ixdp3pqei2o2vmx5mm5irxhoziuznwr2kgmvujo2om",
+       "alt": "Screenshot of a 3D isometric real-time strategy game in progress. HUD at top reads \"1:49\", \"4×\", \"Ironclad · Industry\" (blue dot), \"Boom · Industry\" (red dot), resource icons and \"0:56\", with a blue-versus-red balance bar labeled \"B\" and \"R\". A banner in the center top reads \"DOUBLE KILL\" with \"Blue\" beneath it. The grassy battlefield shows a blue team base in the lower left with a domed command center, a radar dish, two factory buildings and a turret, plus a refinery labeled \"+200\" where blue supply trucks carrying crates gather around ore deposits, with floating \"+45\" labels by the trucks. A gravel road runs diagonally from the base to the upper right, where blue tanks fire a laser at a white enemy unit. Near the base, red enemy tanks under fire show a \"+45\" label, while blue turrets shoot at them. Rocky outcrops sit at the top left and right center, clusters of low-poly trees line the right and bottom edges, and a minimap is in the top right corner. Pause and mute buttons are at the top left, and zoom \"+\" and \"−\" buttons and a lightning bolt button are at the bottom left.",
+       "aspectRatio": {
+        "height": 1117,
+        "width": 1728
+       }
+      },
+      {
+       "thumb": "https://cdn.bsky.app/img/feed_thumbnail/plain/did:plc:kft6lu4trxowqmter2b6vg6z/bafkreiab6mo7ig5nzlklebglyd2gldanbtbx6zkhcqjawedttanryd32sq",
+       "fullsize": "https://cdn.bsky.app/img/feed_fullsize/plain/did:plc:kft6lu4trxowqmter2b6vg6z/bafkreiab6mo7ig5nzlklebglyd2gldanbtbx6zkhcqjawedttanryd32sq",
+       "alt": "Screenshot of the same strategy game, now on a snowy winter map in replay mode. HUD at top reads \"6:27\", \"1×\", \"anthropic/claude-haiku-5-5 · industry\" (blue dot), \"gpt-6-luna · industry\" (red dot), resource icons and \"0:03\", with the balance bar labeled \"B\" and \"R\". A note at top left reads \"Blue: Pushing turrets at the enemy's south-east edge.\" A replay panel below the HUD reads \"Blue anthropic/claude-haiku-5-5 · industry vs Red gpt-6-luna · industry · frostbite seed 42\" with a scrubber at \"6:27 / 7:48\" and buttons \"−30s\", \"+30s\", \"All\", \"Blue's eyes\", \"Red's eyes\" and \"Notes\". A frozen lake of cracked ice plates fills the left side. In the lower center a group of blue tanks advances past a snow-covered pine forest toward a line of red turrets along the lake shore, one of them burning. A dark rocky ridge crosses the middle, and the red base with a refinery, other buildings, tanks and supply trucks sits in the upper right. Minimap at top right, zoom and lightning buttons at bottom left.",
+       "aspectRatio": {
+        "height": 870,
+        "width": 1275
+       }
+      }
+     ],
+     "$type": "app.bsky.embed.images#view"
+    },
+    "bookmarkCount": 44,
+    "replyCount": 35,
+    "repostCount": 19,
+    "likeCount": 277,
+    "quoteCount": 11,
+    "indexedAt": "2026-10-20T19:43:24.538Z",
+    "labels": []
+   },
+   "opThreadPostIndex": 1,
+   "opThreadPostCount": 5
+  },
+  {
+   "post": {
+    "uri": "at://did:plc:kft6lu4trxowqmter2b6vg6z/app.bsky.feed.post/3myahrcpxu22s",
+    "cid": "bafyreifrexrueoncxvypdawr5j5s6ku63mtpoflgcdanbowdstgbnxvfva",
+    "author": {
+     "did": "did:plc:kft6lu4trxowqmter2b6vg6z",
+     "handle": "simonwillison.net",
+     "displayName": "Simon Willison",
+     "avatar": "https://cdn.bsky.app/img/avatar/plain/did:plc:kft6lu4trxowqmter2b6vg6z/bafkreiewl57f52tt6jrd7gtn75edweos7z6bjxsqhottxw4l7zme6o55ma",
+     "associated": {
+      "chat": {
+       "allowIncoming": "following"
+      },
+      "activitySubscription": {
+       "allowSubscriptions": "followers"
+      }
+     },
+     "labels": [],
+     "createdAt": "2023-04-25T16:08:31.603Z",
+     "verification": {
+      "verifications": [
+       {
+        "issuer": "did:plc:z72i7hdynmk6r22z27h6tvur",
+        "issuerDisplayName": "Bluesky",
+        "issuerHandle": "bsky.app",
+        "uri": "at://did:plc:z72i7hdynmk6r22z27h6tvur/app.bsky.graph.verification/3lndpy5yj3c2f",
+        "isValid": true,
+        "createdAt": "2025-04-21T10:49:10.070Z"
+       }
+      ],
+      "verifiedStatus": "valid",
+      "trustedVerifierStatus": "none"
+     }
+    },
+    "record": {
+     "$type": "app.bsky.feed.post",
+     "createdAt": "2026-10-19T15:47:31.202Z",
+     "langs": [
+      "en"
+     ],
+     "text": "Anyone else's TikTok occasionally decide to show them promotional videos from Chinese industrial machinery suppliers?"
+    },
+    "bookmarkCount": 4,
+    "replyCount": 19,
+    "repostCount": 1,
+    "likeCount": 86,
+    "quoteCount": 2,
+    "indexedAt": "2026-10-19T15:47:31.459Z",
+    "labels": []
+   },
+   "opThreadPostIndex": 1,
+   "opThreadPostCount": 3
+  },
+  {
+   "post": {
+    "uri": "at://did:plc:kft6lu4trxowqmter2b6vg6z/app.bsky.feed.post/3mxw5izz2gs2g",
+    "cid": "bafyreiefjlgd2p2vqlopvmkvzg2p6iu2ojrmkudtmwbrb5milvff7elr6e",
+    "author": {
+     "did": "did:plc:kft6lu4trxowqmter2b6vg6z",
+     "handle": "simonwillison.net",
+     "displayName": "Simon Willison",
+     "avatar": "https://cdn.bsky.app/img/avatar/plain/did:plc:kft6lu4trxowqmter2b6vg6z/bafkreiewl57f52tt6jrd7gtn75edweos7z6bjxsqhottxw4l7zme6o55ma",
+     "associated": {
+      "chat": {
+       "allowIncoming": "following"
+      },
+      "activitySubscription": {
+       "allowSubscriptions": "followers"
+      }
+     },
+     "labels": [],
+     "createdAt": "2023-04-25T16:08:31.603Z",
+     "verification": {
+      "verifications": [
+       {
+        "issuer": "did:plc:z72i7hdynmk6r22z27h6tvur",
+        "issuerDisplayName": "Bluesky",
+        "issuerHandle": "bsky.app",
+        "uri": "at://did:plc:z72i7hdynmk6r22z27h6tvur/app.bsky.graph.verification/3lndpy5yj3c2f",
+        "isValid": true,
+        "createdAt": "2025-04-21T10:49:10.070Z"
+       }
+      ],
+      "verifiedStatus": "valid",
+      "trustedVerifierStatus": "none"
+     }
+    },
+    "record": {
+     "$type": "app.bsky.feed.post",
+     "createdAt": "2026-10-15T13:17:18.829Z",
+     "embed": {
+      "$type": "app.bsky.embed.images",
+      "images": [
+       {
+        "alt": "The start-up has also clamped down on\n\"distillation\" - a controversial practice whereby rival Al labs train their models on the outputs of more advanced ones.\nWhen rival companies \"distil\" their models from Anthropic's models, that involves heavy usage and spending.\nAnthropic told investors on Wednesday distillation accounted for 5 per cent to 7 per cent of revenue and that they had cut it back\n\"materially\" in the third quarter of the year, said four people with direct knowledge of the matter.",
+        "aspectRatio": {
+         "height": 1437,
+         "width": 1320
+        },
+        "image": {
+         "$type": "blob",
+         "ref": {
+          "$link": "bafkreidvuzanudapoctvignhqdg2jah2fmbmcc3bh4dft5oryu7wshmsue"
+         },
+         "mimeType": "image/jpeg",
+         "size": 687710
+        }
+       }
+      ]
+     },
+     "facets": [
+      {
+       "features": [
+        {
+         "$type": "app.bsky.richtext.facet#link",
+         "uri": "https://www.ft.com/content/11632d03-358c-454b-af95-d06d4072932b?syn-25a6b1a6=1"
+        }
+       ],
+       "index": {
+        "byteEnd": 263,
+        "byteStart": 237
+       }
+      }
+     ],
+     "langs": [
+      "en"
+     ],
+     "text": "\"Anthropic told investors on Wednesday distillation accounted for 5 per cent to 7 per cent of revenue\"\n\nIf true, and Q2 revenue was $11.5B, then that's more than half a billion dollars spent by other labs to distill Anthropic's models!\n\nwww.ft.com/content/1163..."
+    },
+    "embed": {
+     "images": [
+      {
+       "thumb": "https://cdn.bsky.app/img/feed_thumbnail/plain/did:plc:kft6lu4trxowqmter2b6vg6z/bafkreidvuzanudapoctvignhqdg2jah2fmbmcc3bh4dft5oryu7wshmsue",
+       "fullsize": "https://cdn.bsky.app/img/feed_fullsize/plain/did:plc:kft6lu4trxowqmter2b6vg6z/bafkreidvuzanudapoctvignhqdg2jah2fmbmcc3bh4dft5oryu7wshmsue",
+       "alt": "The start-up has also clamped down on\n\"distillation\" - a controversial practice whereby rival Al labs train their models on the outputs of more advanced ones.\nWhen rival companies \"distil\" their models from Anthropic's models, that involves heavy usage and spending.\nAnthropic told investors on Wednesday distillation accounted for 5 per cent to 7 per cent of revenue and that they had cut it back\n\"materially\" in the third quarter of the year, said four people with direct knowledge of the matter.",
+       "aspectRatio": {
+        "height": 1437,
+        "width": 1320
+       }
+      }
+     ],
+     "$type": "app.bsky.embed.images#view"
+    },
+    "bookmarkCount": 3,
+    "replyCount": 14,
+    "repostCount": 11,
+    "likeCount": 84,
+    "quoteCount": 6,
+    "indexedAt": "2026-10-15T13:17:21.754Z",
+    "labels": []
+   }
+  },
+  {
+   "post": {
+    "uri": "at://did:plc:kft6lu4trxowqmter2b6vg6z/app.bsky.feed.post/3mxp55chsbc2c",
+    "cid": "bafyreihfdkkc4z72azy3pmwpspxhuwu6oe4jj5maqkt7ao7bufm23qjlau",
+    "author": {
+     "did": "did:plc:kft6lu4trxowqmter2b6vg6z",
+     "handle": "simonwillison.net",
+     "displayName": "Simon Willison",
+     "avatar": "https://cdn.bsky.app/img/avatar/plain/did:plc:kft6lu4trxowqmter2b6vg6z/bafkreiewl57f52tt6jrd7gtn75edweos7z6bjxsqhottxw4l7zme6o55ma",
+     "associated": {
+      "chat": {
+       "allowIncoming": "following"
+      },
+      "activitySubscription": {
+       "allowSubscriptions": "followers"
+      }
+     },
+     "labels": [],
+     "createdAt": "2023-04-25T16:08:31.603Z",
+     "verification": {
+      "verifications": [
+       {
+        "issuer": "did:plc:z72i7hdynmk6r22z27h6tvur",
+        "issuerDisplayName": "Bluesky",
+        "issuerHandle": "bsky.app",
+        "uri": "at://did:plc:z72i7hdynmk6r22z27h6tvur/app.bsky.graph.verification/3lndpy5yj3c2f",
+        "isValid": true,
+        "createdAt": "2025-04-21T10:49:10.070Z"
+       }
+      ],
+      "verifiedStatus": "valid",
+      "trustedVerifierStatus": "none"
+     }
+    },
+    "record": {
+     "$type": "app.bsky.feed.post",
+     "createdAt": "2026-10-12T18:22:06.876Z",
+     "embed": {
+      "$type": "app.bsky.embed.external",
+      "external": {
+       "description": "Python 3.15 is here! Here’s the essential What’s new in Python 3.15 guide, this year curated by 3.14 and 3.15 release manager Hugo van Kemenade. As someone who builds open …",
+       "thumb": {
+        "$type": "blob",
+        "ref": {
+         "$link": "bafkreidc2yutgb7hj6opyxdhhmg6glm5ik2g7tzmgpvwtkuwoo6wcgseaa"
+        },
+        "mimeType": "image/jpeg",
+        "size": 650212
+       },
+       "title": "Hello Python 3.15, goodbye 3.10, and now I can use 3.11",
+       "uri": "https://simonwillison.net/2026/Oct/12/python-3-15/"
+      }
+     },
+     "facets": [
+      {
+       "features": [
+        {
+         "$type": "app.bsky.richtext.facet#link",
+         "uri": "https://simonwillison.net/2026/Oct/12/python-3-15/"
+        }
+       ],
+       "index": {
+        "byteEnd": 211,
+        "byteStart": 178
+       }
+      }
+     ],
+     "langs": [
+      "en"
+     ],
+     "text": "Shared some notes on Python 3.15, using it with uv, and features from Python 3.11 I'm excited to use now that 3.10 is no longer the minimum supported version for my own projects simonwillison.net/2026/Oct/12/..."
+    },
+    "embed": {
+     "external": {
+      "uri": "https://simonwillison.net/2026/Oct/12/python-3-15/",
+      "title": "Hello Python 3.15, goodbye 3.10, and now I can use 3.11",
+      "description": "Python 3.15 is here! Here’s the essential What’s new in Python 3.15 guide, this year curated by 3.14 and 3.15 release manager Hugo van Kemenade. As someone who builds open …",
+      "thumb": "https://cdn.bsky.app/img/feed_thumbnail/plain/did:plc:kft6lu4trxowqmter2b6vg6z/bafkreidc2yutgb7hj6opyxdhhmg6glm5ik2g7tzmgpvwtkuwoo6wcgseaa"
+     },
+     "$type": "app.bsky.embed.external#view"
+    },
+    "bookmarkCount": 7,
+    "replyCount": 5,
+    "repostCount": 4,
+    "likeCount": 72,
+    "quoteCount": 0,
+    "indexedAt": "2026-10-12T18:22:23.361Z",
+    "labels": []
+   }
+  },
+  {
+   "post": {
+    "uri": "at://did:plc:kft6lu4trxowqmter2b6vg6z/app.bsky.feed.post/3mxndkxxbhk24",
+    "cid": "bafyreif7gupukh7hidoybdhuupbmv43rvpxxp6n2if3tp23kb6eiv3dtj4",
+    "author": {
+     "did": "did:plc:kft6lu4trxowqmter2b6vg6z",
+     "handle": "simonwillison.net",
+     "displayName": "Simon Willison",
+     "avatar": "https://cdn.bsky.app/img/avatar/plain/did:plc:kft6lu4trxowqmter2b6vg6z/bafkreiewl57f52tt6jrd7gtn75edweos7z6bjxsqhottxw4l7zme6o55ma",
+     "associated": {
+      "chat": {
+       "allowIncoming": "following"
+      },
+      "activitySubscription": {
+       "allowSubscriptions": "followers"
+      }
+     },
+     "labels": [],
+     "createdAt": "2023-04-25T16:08:31.603Z",
+     "verification": {
+      "verifications": [
+       {
+        "issuer": "did:plc:z72i7hdynmk6r22z27h6tvur",
+        "issuerDisplayName": "Bluesky",
+        "issuerHandle": "bsky.app",
+        "uri": "at://did:plc:z72i7hdynmk6r22z27h6tvur/app.bsky.graph.verification/3lndpy5yj3c2f",
+        "isValid": true,
+        "createdAt": "2025-04-21T10:49:10.070Z"
+       }
+      ],
+      "verifiedStatus": "valid",
+      "trustedVerifierStatus": "none"
+     }
+    },
+    "record": {
+     "$type": "app.bsky.feed.post",
+     "createdAt": "2026-10-12T01:11:48.586Z",
+     "embed": {
+      "$type": "app.bsky.embed.images",
+      "images": [
+       {
+        "alt": "Screenshot of YouTube video player with the comments panel open. The paused video shows a mustached man in a black cowboy hat and black vest with a sheriff's star badge, seated at a wooden table. \"Comments\" shows one comment from @r.g.carter3908, 2d ago: \"i don't know,  seems easier to just pay your taxes then to make what ever this is.\" The comment has 6 likes.\n",
+        "aspectRatio": {
+         "height": 1253,
+         "width": 1320
+        },
+        "image": {
+         "$type": "blob",
+         "ref": {
+          "$link": "bafkreih46yxnazg6e6ny7sskhthg4jzmrl2v4wkjp3jeb5htfo75tbgz6q"
+         },
+         "mimeType": "image/jpeg",
+         "size": 506082
+        }
+       }
+      ]
+     },
+     "facets": [
+      {
+       "features": [
+        {
+         "$type": "app.bsky.richtext.facet#link",
+         "uri": "https://youtu.be/2B6uBfh7bjc"
+        }
+       ],
+       "index": {
+        "byteEnd": 157,
+        "byteStart": 137
+       }
+      }
+     ],
+     "langs": [
+      "en"
+     ],
+     "text": "Found the YouTube music video by that pizza chain guy who was bribing Kimberley Guilfoyle to lobby the IRS and send his song to Kid Rock youtu.be/2B6uBfh7bjc"
+    },
+    "embed": {
+     "images": [
+      {
+       "thumb": "https://cdn.bsky.app/img/feed_thumbnail/plain/did:plc:kft6lu4trxowqmter2b6vg6z/bafkreih46yxnazg6e6ny7sskhthg4jzmrl2v4wkjp3jeb5htfo75tbgz6q",
+       "fullsize": "https://cdn.bsky.app/img/feed_fullsize/plain/did:plc:kft6lu4trxowqmter2b6vg6z/bafkreih46yxnazg6e6ny7sskhthg4jzmrl2v4wkjp3jeb5htfo75tbgz6q",
+       "alt": "Screenshot of YouTube video player with the comments panel open. The paused video shows a mustached man in a black cowboy hat and black vest with a sheriff's star badge, seated at a wooden table. \"Comments\" shows one comment from @r.g.carter3908, 2d ago: \"i don't know,  seems easier to just pay your taxes then to make what ever this is.\" The comment has 6 likes.\n",
+       "aspectRatio": {
+        "height": 1253,
+        "width": 1320
+       }
+      }
+     ],
+     "$type": "app.bsky.embed.images#view"
+    },
+    "bookmarkCount": 3,
+    "replyCount": 3,
+    "repostCount": 0,
+    "likeCount": 37,
+    "quoteCount": 0,
+    "indexedAt": "2026-10-12T01:11:50.456Z",
+    "labels": []
+   },
+   "opThreadPostIndex": 1,
+   "opThreadPostCount": 2
+  }
+ ],
+ "cursor": "2026-10-12T01:11:48.586Z"
+}

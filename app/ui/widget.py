@@ -8,13 +8,14 @@ from typing import Protocol
 
 import customtkinter as ctk
 
-from app.config import Settings
+from app.config import Settings, app_home
 from app.storage.ui_queries import ClusterView, source_label
 from app.ui import theme
 from app.ui import tray as tray_commands
 from app.ui.backend import UIEvent
 from app.ui.model import FILTER_LABELS, UIModel
 from app.ui.notifier import Notifier
+from app.ui.settings_window import SettingsWindow
 from app.ui.state import WindowState, load_state, save_state
 from app.ui.tray import Tray
 
@@ -58,8 +59,10 @@ class FloatingWidget(ctk.CTk):  # type: ignore[misc]
         notifier: Notifier | None,
         state_path: Path,
         tray: Tray | None = None,
+        settings_path: Path | None = None,
     ) -> None:
         super().__init__()
+        self._settings_path = settings_path or app_home() / "settings.toml"
         self._settings = settings
         self._model = model
         self._controller = controller
@@ -140,10 +143,15 @@ class FloatingWidget(ctk.CTk):  # type: ignore[misc]
         self._top_button.pack(side="right", padx=6)
         self._button(header, "Chạy ngay", self.run_now, filled=True, width=88).pack(side="right")
 
+        info_row = ctk.CTkFrame(self, fg_color="transparent")
+        info_row.pack(fill="x", padx=14)
         self._unread_label = ctk.CTkLabel(
-            self, text="", font=self._fonts["body"], text_color=theme.MUTED, anchor="w"
+            info_row, text="", font=self._fonts["body"], text_color=theme.MUTED, anchor="w"
         )
-        self._unread_label.pack(fill="x", padx=14)
+        self._unread_label.pack(side="left")
+        self._button(info_row, "Cài đặt", self.show_settings, filled=False, width=70).pack(
+            side="right"
+        )
 
         filters = ctk.CTkFrame(self, fg_color="transparent")
         filters.pack(fill="x", padx=12, pady=6)
@@ -441,6 +449,10 @@ class FloatingWidget(ctk.CTk):  # type: ignore[misc]
             lambda c=cluster: self.toggle_read(c),
             filled=False,
         ).pack(side="left")
+
+    def show_settings(self) -> None:
+        """Mở màn hình cài đặt (ghi settings.toml; áp dụng khi mở lại app)."""
+        SettingsWindow(self, self._settings, self._settings_path, self._fonts)
 
     def show_statuses(self) -> None:
         """Màn hình "tình trạng nguồn": lần chạy cuối và lỗi gần nhất của từng nguồn."""

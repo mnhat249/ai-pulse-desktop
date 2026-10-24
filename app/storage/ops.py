@@ -9,7 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncConnection
 
 from app.core.metrics import WINDOW_HOURS, star_velocity
 from app.core.models import RawItem
-from app.storage.tables import metric_snapshots, raw_items, source_runs, user_state
+from app.storage.tables import metric_snapshots, raw_items, seen_items, source_runs, user_state
 
 AGE_METRIC = "age_hours"
 STARS_METRIC = "stars"
@@ -80,7 +80,26 @@ async def _star_baseline(
     return float(old.value), elapsed
 
 
+async def _was_purged(conn: AsyncConnection, item: RawItem) -> bool:
+    """Bài đã bị dọn (không còn trong raw_items nhưng còn dấu vết): feed vẫn trả lại bài cũ."""
+    exists = await conn.execute(
+        select(raw_items.c.id).where(
+            raw_items.c.source == item.source, raw_items.c.source_id == item.source_id
+        )
+    )
+    if exists.first() is not None:
+        return False
+    seen = await conn.execute(
+        select(seen_items.c.source).where(
+            seen_items.c.source == item.source, seen_items.c.source_id == item.source_id
+        )
+    )
+    return seen.first() is not None
+
+
 async def ingest_item(conn: AsyncConnection, item: RawItem, now: datetime) -> IngestResult:
+    if await _was_purged(conn, item):
+        return IngestResult(0, False)
     result = await upsert_raw_item(conn, item, now)
     rows = [
         {"item_id": result.item_id, "metric": name, "value": value, "captured_at": now}

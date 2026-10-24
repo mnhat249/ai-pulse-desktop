@@ -17,10 +17,18 @@ from app.adapters.base import (
     parse_retry_after,
     request,
 )
+from app.adapters.bluesky import BlueskyAdapter
 from app.adapters.github import GitHubAdapter
 from app.adapters.hackernews import HackerNewsAdapter, keyword_pattern
 from app.adapters.huggingface import HFModelsAdapter, HFPapersAdapter
-from app.config import GitHubSettings, HackerNewsSettings, HuggingFaceSettings
+from app.adapters.rss import RSSAdapter
+from app.config import (
+    BlueskySettings,
+    FeedSettings,
+    GitHubSettings,
+    HackerNewsSettings,
+    HuggingFaceSettings,
+)
 from app.core.models import RawItem
 
 FIXTURES = Path(__file__).parent / "fixtures"
@@ -66,6 +74,19 @@ def mock_hn(router: respx.MockRouter) -> None:
     router.get(HN_URL).respond(200, json=fixture("hn_search.json"))
 
 
+RSS_URL = "https://huggingface.co/blog/feed.xml"
+BLUESKY_URL = "https://public.api.bsky.app/xrpc/app.bsky.feed.getAuthorFeed"
+
+
+def mock_rss(router: respx.MockRouter) -> None:
+    text = (FIXTURES / "rss_hf_blog.xml").read_text(encoding="utf-8")
+    router.get(RSS_URL).respond(200, text=text)
+
+
+def mock_bluesky(router: respx.MockRouter) -> None:
+    router.get(BLUESKY_URL).respond(200, json=fixture("bluesky_author_feed.json"))
+
+
 def fail_500(url: str) -> Callable[[respx.MockRouter], None]:
     def route(router: respx.MockRouter) -> None:
         router.get(url).respond(500)
@@ -82,6 +103,18 @@ CASES: list[tuple[str, Factory, Callable[[respx.MockRouter], None], str]] = [
         lambda: HackerNewsAdapter(HackerNewsSettings(keywords=["llm"], min_points=0)),
         mock_hn,
         HN_URL,
+    ),
+    (
+        "rss_hf_blog",
+        lambda: RSSAdapter(FeedSettings(name="hf_blog", url=RSS_URL)),
+        mock_rss,
+        RSS_URL,
+    ),
+    (
+        "bluesky",
+        lambda: BlueskyAdapter(BlueskySettings(handles=["simonwillison.net"])),
+        mock_bluesky,
+        BLUESKY_URL,
     ),
 ]
 
