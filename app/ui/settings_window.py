@@ -43,6 +43,8 @@ class SettingsWindow(ctk.CTkToplevel):  # type: ignore[misc]
         self._startup_result: list[bool] = []
         self._applied_startup = settings.start_with_windows  # trạng thái shortcut đã áp dụng thật
         self._startup_target = settings.start_with_windows
+        self._startup_busy = False
+        self._startup_pending: bool | None = None  # lần lưu trong lúc PowerShell còn chạy
         self.title("Cài đặt")
         self.geometry("420x640")
         self.attributes("-topmost", True)
@@ -182,14 +184,20 @@ class SettingsWindow(ctk.CTkToplevel):  # type: ignore[misc]
             )
             return False
         self._message.configure(text="Đã lưu. Mở lại NeuralRadar để áp dụng.", text_color=theme.INK)
-        if draft.start_with_windows != self._applied_startup:
-            self._apply_startup_in_background(draft.start_with_windows)
+        self._request_startup(draft.start_with_windows)
         return True
+
+    def _request_startup(self, enabled: bool) -> None:
+        if self._startup_busy:  # mỗi lúc chỉ một luồng PowerShell; giá trị mới nhất chờ lượt sau
+            self._startup_pending = enabled
+        elif enabled != self._applied_startup:
+            self._apply_startup_in_background(enabled)
 
     def _apply_startup_in_background(self, enabled: bool) -> None:
         """PowerShell mất khoảng một giây: chạy ở luồng riêng, giao diện chỉ hỏi kết quả."""
 
         self._startup_target = enabled
+        self._startup_busy = True
 
         def work() -> None:
             self._startup_result.append(self._apply_startup(enabled))
@@ -203,6 +211,7 @@ class SettingsWindow(ctk.CTkToplevel):  # type: ignore[misc]
         if not self._startup_result:
             self.after(POLL_MS, self._poll_startup)
             return
+        self._startup_busy = False
         if self._startup_result.pop():
             self._applied_startup = self._startup_target  # lần lưu sau so với trạng thái mới này
         else:
@@ -210,3 +219,6 @@ class SettingsWindow(ctk.CTkToplevel):  # type: ignore[misc]
                 text="Đã lưu, nhưng không tạo/xóa được shortcut khởi động cùng Windows.",
                 text_color=theme.ERROR,
             )
+        pending, self._startup_pending = self._startup_pending, None
+        if pending is not None:
+            self._request_startup(pending)

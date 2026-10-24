@@ -9,7 +9,7 @@ from app.config import Settings, load_settings
 from app.settings_store import deep_merge, read_settings_file, update_settings_file
 from app.ui.settings_form import SettingsDraft
 from app.ui.settings_window import SettingsWindow
-from tests.tk_env import Env, card_texts
+from tests.tk_env import Env, card_texts, pump_until
 
 
 def test_deep_merge_merges_tables_and_replaces_lists() -> None:
@@ -129,10 +129,7 @@ def test_window_saves_valid_changes_to_the_toml_file(fresh: Env, tmp_path: Path)
         assert data["github"]["enabled"] is False and data["hackernews"]["interval_minutes"] == 25
         assert data["start_with_windows"] is True
         assert "Đã lưu" in window._message.cget("text")
-        for _ in range(40):  # luồng nền áp dụng shortcut Startup
-            window.update()
-            if applied:
-                break
+        pump_until(window, lambda: bool(applied))  # luồng nền áp dụng shortcut Startup
         assert applied == [True]
     finally:
         window.destroy()
@@ -178,10 +175,7 @@ def test_window_reports_a_failed_startup_change(fresh: Env, tmp_path: Path) -> N
     try:
         window._startup.set(True)
         window.save()
-        for _ in range(40):
-            window.update()
-            if "shortcut" in window._message.cget("text"):
-                break
+        pump_until(window, lambda: "shortcut" in window._message.cget("text"))
         assert "shortcut" in window._message.cget("text")
     finally:
         window.destroy()
