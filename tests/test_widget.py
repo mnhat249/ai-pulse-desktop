@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import sqlite3
+import tkinter
 from typing import Any
 
 import customtkinter as ctk
@@ -9,7 +11,7 @@ from app.storage.ui_queries import ClusterView
 from app.ui import tray as cmd
 from app.ui.backend import UIEvent
 from app.ui.state import load_state
-from app.ui.widget import open_link
+from app.ui.widget import FloatingWidget, open_link
 from tests.tk_env import Env, card_texts
 
 
@@ -237,3 +239,123 @@ def test_state_events_refresh_the_list_but_never_toast(fresh: Env) -> None:
     fresh.events.put(UIEvent("updated", (fresh.ids["hot"],)))
     fresh.widget.process_events()
     assert fresh.notifier.shown == [fresh.ids["hot"]]
+
+
+def _tree(root: tkinter.Misc) -> set[str]:
+    names: set[str] = set()
+    for child in root.winfo_children():
+        names.add(str(child))
+        names |= _tree(child)
+    return names
+
+
+def _shown_ids(widget: FloatingWidget) -> list[int]:
+    ids = {str(card): cid for cid, card in widget._cards.items()}
+    return [ids[str(card)] for card in widget._feed.pack_slaves()]
+
+
+def card_texts_of(card: tkinter.Misc) -> list[str]:
+    texts: list[str] = []
+    for name in sorted(_tree(card)):
+        try:
+            value = card.nametowidget(name).cget("text")
+        except (tkinter.TclError, AttributeError, ValueError, KeyError):
+            continue
+        if isinstance(value, str) and value:
+            texts.append(value)
+    return texts
+
+
+def _set_user_state(fresh: Env, cluster_id: int, *, bookmarked: bool, read: bool) -> None:
+    conn = sqlite3.connect(fresh.path.parent / "ui.db")
+    conn.execute(
+        "INSERT INTO user_state (cluster_id, read_at, bookmarked) VALUES (?, ?, ?)"
+        " ON CONFLICT(cluster_id) DO UPDATE SET read_at = excluded.read_at,"
+        " bookmarked = excluded.bookmarked",
+        (cluster_id, "2026-10-24 08:00:00" if read else None, bookmarked),
+    )
+    conn.commit()
+    conn.close()
+
+
+def test_toggling_a_card_destroys_only_that_card(fresh: Env) -> None:
+    widget = fresh.widget
+    widget.refresh()
+    order = [str(card) for card in widget._feed.pack_slaves()]
+    hot_card = widget._cards[fresh.ids["hot"]]
+    hot_widgets = {str(hot_card)} | _tree(hot_card)
+    before = _tree(widget._feed)
+
+    widget.toggle_card(fresh.ids["hot"])
+    destroyed = before - _tree(widget._feed)
+    assert destroyed == hot_widgets
+    new_hot = widget._cards[fresh.ids["hot"]]
+    assert [str(c) for c in widget._feed.pack_slaves()] == [
+        str(new_hot) if name == str(hot_card) else name for name in order
+    ]
+    assert "Chạy agent cục bộ" in " ".join(card_texts(widget))
+
+    expanded = _tree(widget._feed)
+    expanded_hot = {str(new_hot)} | _tree(new_hot)
+    widget.toggle_card(fresh.ids["hot"])
+    assert expanded - _tree(widget._feed) == expanded_hot
+    assert "Chạy agent cục bộ" not in " ".join(card_texts(widget))
+    assert widget._unread_label.cget("text") == "3 tin chưa đọc"
+
+
+def test_toggling_a_middle_card_keeps_card_order(fresh: Env) -> None:
+    widget = fresh.widget
+    widget.refresh()
+    expected = [fresh.ids[name] for name in ("hot", "plain", "paper")]
+    assert _shown_ids(widget) == expected
+    for _ in range(2):
+        widget.toggle_card(fresh.ids["plain"])
+        assert _shown_ids(widget) == expected
+
+
+def test_state_event_rebuilds_only_the_changed_card(fresh: Env) -> None:
+    widget = fresh.widget
+    widget.refresh()
+    hot_card = widget._cards[fresh.ids["hot"]]
+    hot_widgets = {str(hot_card)} | _tree(hot_card)
+    before = _tree(widget._feed)
+    try:
+        _set_user_state(fresh, fresh.ids["hot"], bookmarked=True, read=True)
+        fresh.events.put(UIEvent("state", (fresh.ids["hot"],)))
+        widget.process_events()
+        assert before - _tree(widget._feed) == hot_widgets
+        assert any("★" in t for t in card_texts_of(widget._cards[fresh.ids["hot"]]))
+        assert widget._unread_label.cget("text") == "2 tin chưa đọc"
+
+        fresh.events.put(UIEvent("state", (fresh.ids["plain"],)))
+        unchanged = _tree(widget._feed)
+        widget.process_events()  # dữ liệu không đổi thì không hủy widget nào
+        assert unchanged - _tree(widget._feed) == set()
+    finally:
+        _set_user_state(fresh, fresh.ids["hot"], bookmarked=False, read=False)
+        widget.refresh()
+
+
+def test_card_leaving_the_filter_triggers_full_rebuild(fresh: Env) -> None:
+    widget = fresh.widget
+    widget._on_filter("Chưa đọc")
+    assert len(widget._feed.pack_slaves()) == 3
+    try:
+        _set_user_state(fresh, fresh.ids["plain"], bookmarked=False, read=True)
+        fresh.events.put(UIEvent("state", (fresh.ids["plain"],)))
+        widget.process_events()
+        assert fresh.ids["plain"] not in widget._cards
+        assert "Rust 2.0 released" not in " ".join(card_texts(widget))
+        assert len(widget._feed.pack_slaves()) == 2
+    finally:
+        _set_user_state(fresh, fresh.ids["plain"], bookmarked=False, read=False)
+        widget._on_filter("Tất cả")
+
+
+def test_toggle_after_filter_change_without_refresh_rebuilds_everything(fresh: Env) -> None:
+    widget = fresh.widget
+    widget._on_filter("Bookmark")
+    widget._model.set_filter_label("Tất cả")  # bộ lọc đổi nhưng chưa dựng lại
+    widget.toggle_card(fresh.ids["plain"])
+    texts = " | ".join(card_texts(widget))
+    assert "Rust 2.0 released" in texts and "Công cụ agent mới" in texts
