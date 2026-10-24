@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import logging
 import queue
+import sqlite3
+import threading
 import webbrowser
 from pathlib import Path
 from typing import Protocol
@@ -10,7 +12,8 @@ import customtkinter as ctk
 
 from app.config import Settings, app_home
 from app.core import sources
-from app.storage.ui_queries import ClusterFilter, ClusterView, source_label
+from app.storage import ui_queries
+from app.storage.ui_queries import ClusterDetails, ClusterFilter, ClusterView, source_label
 from app.ui import theme
 from app.ui import tray as tray_commands
 from app.ui.backend import UIEvent
@@ -45,6 +48,14 @@ def open_link(url: str | None) -> bool:
     """Chỉ mở http(s); không bao giờ mở file:// hay lệnh lạ."""
     if url and url.startswith(("http://", "https://")):
         webbrowser.open(url)
+        return True
+    return False
+
+
+def open_link_in_thread(url: str | None) -> bool:
+    """Như `open_link` nhưng `webbrowser.open` chạy ở luồng riêng để giao diện không đứng."""
+    if url and url.startswith(("http://", "https://")):
+        threading.Thread(target=webbrowser.open, args=(url,), daemon=True).start()
         return True
     return False
 
@@ -304,9 +315,12 @@ class FloatingWidget(ctk.CTk):  # type: ignore[misc]
         self.refresh()
 
     def open_cluster_link(self, cluster: ClusterView) -> None:
-        if open_link(cluster.primary_url):
-            if not cluster.read:
-                self._controller.mark_read(cluster.id)
+        self.open_url(cluster, cluster.primary_url or (cluster.urls[0] if cluster.urls else None))
+
+    def open_url(self, cluster: ClusterView, url: str | None) -> None:
+        """Mở link ở luồng riêng rồi đánh dấu đã đọc (chỉ thẻ này được dựng lại khi sự kiện về)."""
+        if open_link_in_thread(url) and not cluster.read:
+            self._controller.mark_read(cluster.id)
 
     def toggle_read(self, cluster: ClusterView) -> None:
         self._controller.mark_read(cluster.id, not cluster.read)
@@ -330,10 +344,14 @@ class FloatingWidget(ctk.CTk):  # type: ignore[misc]
         return (tuple(c.id for c in clusters), *self._filter_key())
 
     def refresh(self) -> None:
-        """Dựng lại toàn bộ danh sách thẻ."""
+        """Dựng lại toàn bộ danh sách thẻ, giữ nguyên vị trí cuộn."""
         clusters = self._model.clusters()
         self._update_header()
+        top = self._feed._parent_canvas.yview()[0]
         self._rebuild_feed(clusters)
+        if top > 0:
+            self.update_idletasks()
+            self._feed._parent_canvas.yview_moveto(top)
 
     def sync(self) -> None:
         """Đọc lại DB; danh sách id hay bộ lọc đổi mới dựng lại hết, không thì chỉ thẻ đổi."""
@@ -442,6 +460,21 @@ class FloatingWidget(ctk.CTk):  # type: ignore[misc]
             font=self._fonts["small"],
             text_color=theme.MUTED,
         ).pack(side="right")
+        if not expanded:
+            ctk.CTkButton(
+                meta,
+                text="↗",
+                command=lambda c=cluster: self.open_cluster_link(c),
+                font=self._fonts["body"],
+                width=26,
+                height=18,
+                corner_radius=4,
+                fg_color="transparent",
+                hover_color=theme.TRACK,
+                text_color=theme.INK,
+                border_width=1,
+                border_color=theme.BORDER,
+            ).pack(side="right", padx=(0, 6))
 
         for widget in (card, body, title, meta):
             widget.bind("<Button-1>", lambda _e, cid=cluster.id: self.toggle_card(cid))
@@ -449,8 +482,65 @@ class FloatingWidget(ctk.CTk):  # type: ignore[misc]
             self._add_details(body, cluster)
         return card
 
-    def _add_details(self, body: ctk.CTkFrame, cluster: ClusterView) -> None:
+    def _details_of(self, cluster_id: int) -> ClusterDetails | None:
+        try:
+            return ui_queries.cluster_details(self._model.reader, cluster_id)
+        except sqlite3.Error:
+            logger.exception("Không đọc được chi tiết cụm %s", cluster_id)
+            return None
 
+    def _lead(self, body: ctk.CTkFrame, text: str) -> None:
+        ctk.CTkLabel(
+            body,
+            text=text,
+            font=self._fonts["lead"],
+            text_color=theme.MUTED,
+            anchor="w",
+            height=16,
+        ).pack(fill="x", pady=(8, 0))
+
+    def _paragraph(self, body: ctk.CTkFrame, text: str, color: str = theme.INK) -> None:
+        ctk.CTkLabel(
+            body,
+            height=0,
+            text=text,
+            font=self._fonts["body"],
+            text_color=color,
+            wraplength=WRAP,
+            anchor="w",
+            justify="left",
+        ).pack(fill="x")
+
+    def _add_sources(
+        self, body: ctk.CTkFrame, cluster: ClusterView, details: ClusterDetails
+    ) -> None:
+        self._lead(body, "Nguồn")
+        for item in details.items:
+            row = ctk.CTkLabel(
+                body,
+                height=0,
+                text=f"{item.label} · {item.title}",
+                font=self._fonts["body"],
+                text_color=theme.LINK,
+                wraplength=WRAP,
+                anchor="w",
+                justify="left",
+                cursor="hand2",
+            )
+            row.pack(fill="x", pady=1)
+            row.bind("<Button-1>", lambda _e, c=cluster, u=item.url: self.open_url(c, u))
+
+    def _add_details(self, body: ctk.CTkFrame, cluster: ClusterView) -> None:
+        details = self._details_of(cluster.id)
+        if not cluster.summarized:
+            self._paragraph(
+                body,
+                "Chưa có tóm tắt tiếng Việt: lưu khóa bằng python -m app.setkey gemini",
+                theme.MUTED,
+            )
+            if details is not None and details.excerpt:
+                self._lead(body, "Nội dung gốc")
+                self._paragraph(body, details.excerpt)
         if cluster.summarized:
             for lead, text in (("Cái mới", cluster.innovation), ("Dùng để", cluster.impact)):
                 row = ctk.CTkFrame(body, fg_color="transparent")
@@ -473,6 +563,8 @@ class FloatingWidget(ctk.CTk):  # type: ignore[misc]
                     anchor="w",
                     justify="left",
                 ).pack(fill="x")
+        if details is not None and details.items:
+            self._add_sources(body, cluster, details)
         ctk.CTkLabel(
             body,
             text=f"Quan trọng {cluster.importance:.0f}/100",
