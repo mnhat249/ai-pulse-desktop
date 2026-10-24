@@ -40,7 +40,10 @@ def make_repo(path: Path, check_exit: int) -> Path:
     subprocess.run(["git", "init", "-q"], cwd=path, check=True)
     (path / "scripts").mkdir()
     (path / "scripts" / "check.py").write_text(
-        f"import sys\nprint('kiểm tra giả')\nsys.exit({check_exit})\n", encoding="utf-8"
+        "import sys\n"
+        "sys.stdout.reconfigure(encoding='utf-8')\n"
+        f"print('kiểm tra giả')\nsys.exit({check_exit})\n",
+        encoding="utf-8",
     )
     return path
 
@@ -85,7 +88,11 @@ def test_missing_check_script_does_not_block(tmp_path: Path) -> None:
 
 def test_garbage_input_does_not_block() -> None:
     result = subprocess.run(
-        [sys.executable, str(HOOK)], input="không phải json", capture_output=True, text=True
+        [sys.executable, str(HOOK)],
+        input="không phải json",
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
     )
     assert result.returncode == 0
 
