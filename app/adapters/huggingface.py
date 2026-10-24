@@ -12,8 +12,21 @@ from app.core.sources import SourceInfo, register
 PAPERS_URL = "https://huggingface.co/api/daily_papers"
 MODELS_URL = "https://huggingface.co/api/models"
 
-register(SourceInfo("hf_models", "HF", "#8A5F12", rank=1, heat_metric="trendingScore"))
-register(SourceInfo("hf_papers", "HF", "#8A5F12", rank=2, heat_metric="upvotes"))
+register(
+    SourceInfo(
+        "hf_models",
+        "HF",
+        "#8A5F12",
+        rank=1,
+        heat_metric="trendingScore",
+        title="HuggingFace · model",
+    )
+)
+register(
+    SourceInfo(
+        "hf_papers", "HF", "#8A5F12", rank=2, heat_metric="upvotes", title="HuggingFace · bài báo"
+    )
+)
 
 
 def build_paper(entry: dict[str, Any]) -> RawItem:

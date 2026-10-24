@@ -106,11 +106,11 @@ class SettingsWindow(ctk.CTkToplevel):  # type: ignore[misc]
                 text_color=theme.MUTED,
                 anchor="w",
             ).pack(fill="x", padx=12, pady=(8, 0))
-            for key in feeds:
+            for index, key in enumerate(feeds):
+                last = index == len(feeds) - 1
                 self._switch(sources, key.removeprefix("rss:"), self._enabled[key]).pack(
-                    anchor="w", padx=10, pady=3
+                    anchor="w", padx=10, pady=(3, 10 if last else 3)
                 )
-        ctk.CTkFrame(sources, height=6, fg_color="transparent").pack()
 
         toasts = self._section("Thông báo")
         for text, var in (

@@ -172,9 +172,9 @@ class RankingSettings(BaseModel):
     llm_weight: float = 0.3
     # giá trị của chỉ số "độ nóng" (xem SourceInfo.heat_metric) được tính là nóng tối đa
     heat_scales: dict[str, float] = {
-        "github": 100.0,  # sao tăng trong 24 giờ
-        "hf_models": 1000.0,  # trendingScore
-        "hf_papers": 50.0,  # upvotes
+        "github": 500.0,  # sao tăng trong 24 giờ (p90 thực tế ~100, p99 ~640)
+        "hf_models": 1000.0,  # trendingScore (p90 ~400, p99 ~2200)
+        "hf_papers": 100.0,  # upvotes (p90 ~54)
         "hackernews": 300.0,  # điểm
         "bluesky": 200.0,  # lượt thích
     }

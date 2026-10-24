@@ -19,6 +19,11 @@ class SourceInfo:
     color: str = DEFAULT_COLOR
     rank: int = DEFAULT_RANK  # chọn link chính của cụm: số nhỏ hơn được ưu tiên
     heat_metric: str | None = None  # chỉ số đo "độ nóng" của bài (cột metric_snapshots.metric)
+    title: str = ""  # tên đầy đủ ở màn hình Tình trạng/Cài đặt; trống thì dùng nhãn
+
+    @property
+    def display(self) -> str:
+        return self.title or self.label
 
 
 _REGISTRY: dict[str, SourceInfo] = {}
@@ -47,3 +52,11 @@ def info(source: str) -> SourceInfo:
     if matches:
         return _PREFIXES[max(matches, key=len)]
     return SourceInfo(name=source, label=source)
+
+
+def display_name(source: str) -> str:
+    """Tên dễ đọc của nguồn; khớp theo tiền tố thì thêm đuôi (rss_ainews -> RSS · ainews)."""
+    found = info(source)
+    if found.name != source and source.startswith(found.name):
+        return f"{found.label} · {source.removeprefix(found.name)}"
+    return found.display

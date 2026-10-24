@@ -63,7 +63,7 @@ class RSSAdapter:
         self.interval_minutes = feed.interval_minutes
         self.warnings: list[str] = []
         self._feed = feed
-        register(SourceInfo(self.name, feed.name, RSS_COLOR, rank=20))
+        register(SourceInfo(self.name, feed.name, RSS_COLOR, rank=20, title=f"RSS · {feed.name}"))
 
     async def fetch(self, client: httpx.AsyncClient) -> list[RawItem]:
         self.warnings = []

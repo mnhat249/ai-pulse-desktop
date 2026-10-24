@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+from typing import Any
+
+import customtkinter as ctk
 import pytest
 
 from app.storage.ui_queries import ClusterView
@@ -194,12 +197,18 @@ def test_status_window_lists_sources_and_last_error(fresh: Env) -> None:
     fresh.widget.show_statuses()
     window = (set(fresh.widget.winfo_children()) - before).pop()
     texts: list[str] = []
-    for frame in window.winfo_children():
-        for label in frame.winfo_children():
-            texts.append(str(label.cget("text")))
+
+    def collect(parent: Any) -> None:
+        for child in parent.winfo_children():
+            if isinstance(child, ctk.CTkLabel):
+                texts.append(str(child.cget("text")))
+            collect(child)
+
+    collect(window)
     window.destroy()
     joined = " | ".join(texts)
-    assert "github" in joined and "9 bài" in joined and "HTTP 500" in joined
+    assert "GitHub" in joined and "9 bài" in joined and "HTTP 500" in joined
+    assert "github —" not in joined  # tên đã được làm đẹp
 
 
 def test_paused_state_shows_message_and_updates_tray(fresh: Env) -> None:

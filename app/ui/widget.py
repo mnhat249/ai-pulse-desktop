@@ -9,6 +9,7 @@ from typing import Protocol
 import customtkinter as ctk
 
 from app.config import Settings, app_home
+from app.core import sources
 from app.storage.ui_queries import ClusterView, source_label
 from app.ui import theme
 from app.ui import tray as tray_commands
@@ -458,27 +459,30 @@ class FloatingWidget(ctk.CTk):  # type: ignore[misc]
         """Màn hình "tình trạng nguồn": lần chạy cuối và lỗi gần nhất của từng nguồn."""
         window = ctk.CTkToplevel(self, fg_color=theme.BG)
         window.title("Tình trạng nguồn")
-        window.geometry("420x320")
+        window.geometry("440x460")
         window.attributes("-topmost", True)
+        body = ctk.CTkScrollableFrame(window, fg_color=theme.BG)
+        body.pack(fill="both", expand=True)
         statuses = self._model.statuses()
         if not statuses:
             ctk.CTkLabel(
-                window,
+                body,
                 text="Chưa có lần quét nào. Bấm Chạy ngay để quét.",
                 font=self._fonts["body"],
                 text_color=theme.MUTED,
             ).pack(pady=20)
         for status in statuses:
             frame = ctk.CTkFrame(
-                window,
+                body,
                 fg_color=theme.CARD,
                 corner_radius=CARD_RADIUS,
                 border_width=1,
                 border_color=theme.BORDER,
             )
-            frame.pack(fill="x", padx=10, pady=4)
+            frame.pack(fill="x", padx=6, pady=4)
             mark = "✓" if status.ok else "✗"
-            line = f"{mark} {status.source} — {theme.relative_time(status.last_run)}"
+            name = sources.display_name(status.source)
+            line = f"{mark} {name} — {theme.relative_time(status.last_run)}"
             ctk.CTkLabel(
                 frame,
                 text=f"{line} — {status.item_count} bài",

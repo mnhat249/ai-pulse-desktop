@@ -14,7 +14,9 @@ from app.core.sources import SourceInfo, register
 SEARCH_URL = "https://hn.algolia.com/api/v1/search_by_date"
 ITEM_URL = "https://news.ycombinator.com/item?id={}"
 
-register(SourceInfo("hackernews", "HN", "#B5481B", rank=3, heat_metric="points"))
+register(
+    SourceInfo("hackernews", "HN", "#B5481B", rank=3, heat_metric="points", title="Hacker News")
+)
 
 
 def keyword_pattern(keywords: list[str]) -> re.Pattern[str]:
