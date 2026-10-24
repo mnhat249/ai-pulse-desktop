@@ -18,6 +18,7 @@ dist/
 build/
 logs/
 .tmp-home/
+.tmp-shots/
 
 # Cấu hình và công cụ của Claude Code: giữ trên máy, không đưa vào repo
 .claude/
