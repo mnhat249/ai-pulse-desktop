@@ -100,6 +100,34 @@ def test_changing_mind_while_the_shortcut_job_runs_applies_the_latest_value_afte
         window.destroy()
 
 
+def test_closing_the_window_while_the_shortcut_job_runs_still_applies_the_latest_value(
+    fresh: Env, tmp_path: Path
+) -> None:
+    applied: list[bool] = []
+    release = threading.Event()
+    window = open_blocking_window(fresh, tmp_path / "settings.toml", applied, release)
+    window._startup.set(True)
+    window.save()
+    window._startup.set(False)
+    window.save()
+    window.destroy()  # đóng khi PowerShell lần đầu chưa xong
+    release.set()
+    pump_until(fresh.widget, lambda: len(applied) >= 2 and not window._startup_busy)
+    assert applied == [True, False]  # trước đây lần lưu "Tắt" bị mất, shortcut còn nguyên
+
+
+def test_a_failed_shortcut_change_is_reported_in_the_window(fresh: Env, tmp_path: Path) -> None:
+    applied: list[bool] = []
+    window = open_window(fresh, tmp_path / "settings.toml", applied, result=False)
+    try:
+        window._startup.set(True)
+        window.save()
+        pump_until(window, lambda: "không tạo/xóa được" in window._message.cget("text"))
+        assert "không tạo/xóa được" in window._message.cget("text")
+    finally:
+        window.destroy()
+
+
 def test_a_failed_shortcut_change_is_retried_on_the_next_save(fresh: Env, tmp_path: Path) -> None:
     applied: list[bool] = []
     window = open_window(fresh, tmp_path / "settings.toml", applied, result=False)

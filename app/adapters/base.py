@@ -187,20 +187,24 @@ def parse_items(
     build: Callable[[Any], RawItem],
     warnings: list[str] | None = None,
 ) -> list[RawItem]:
-    """Phần tử hỏng bị bỏ và ghi cảnh báo; mọi phần tử đều hỏng thì ném SourceError rõ tên nguồn."""
+    """Phần tử hỏng bị bỏ, gộp thành một cảnh báo mỗi lần quét; hỏng hết thì ném SourceError."""
     items: list[RawItem] = []
-    first_error: Exception | None = None
+    errors: list[Exception] = []
     entries = list(raw)
     for entry in entries:
         try:
             items.append(build(entry))
         except (KeyError, TypeError, ValueError, AttributeError, IndexError) as exc:
-            first_error = first_error or exc
-            if warnings is not None:
-                warnings.append(f"bỏ một phần tử hỏng: {exc!r}")
-            logger.warning("Nguồn %s bỏ một phần tử hỏng: %r", source, exc)
-    if entries and not items and first_error is not None:
-        raise SourceError(source, f"định dạng dữ liệu đã đổi: {first_error!r}") from first_error
+            errors.append(exc)
+    if not errors:
+        return items
+    if not items:
+        raise SourceError(source, f"định dạng dữ liệu đã đổi: {errors[0]!r}") from errors[0]
+    note = f"bỏ {len(errors)}/{len(entries)} phần tử hỏng (lỗi đầu: {errors[0]!r})"
+    if warnings is not None:
+        warnings.append(note)  # scheduler ghi log và lưu vào source_runs
+    else:
+        logger.warning("Nguồn %s %s", source, note)
     return items
 
 
