@@ -525,8 +525,10 @@ async def test_github_skips_a_broken_repo_and_keeps_the_rest(sleeps: list[float]
         async with httpx.AsyncClient() as client:
             adapter = GitHubAdapter(GitHubSettings(topics=["llm"]))
             items = await adapter.fetch(client)
-    assert len(items) == len(fixture("github_search.json")["items"])
-    assert any("bỏ một phần tử hỏng" in w for w in adapter.warnings)
+    total = len(fixture("github_search.json")["items"])
+    assert len(items) == total
+    assert adapter.warnings == [adapter.warnings[0]]
+    assert adapter.warnings[0].startswith(f"bỏ 1/{total + 1} phần tử hỏng")
 
 
 async def test_hf_papers_skips_a_broken_entry_and_keeps_the_rest(sleeps: list[float]) -> None:
@@ -537,7 +539,34 @@ async def test_hf_papers_skips_a_broken_entry_and_keeps_the_rest(sleeps: list[fl
             adapter = HFPapersAdapter(HuggingFaceSettings())
             items = await adapter.fetch(client)
     assert len(items) == len(fixture("hf_daily_papers.json"))
-    assert adapter.warnings
+    assert len(adapter.warnings) == 1 and "bỏ 1/" in adapter.warnings[0]
+
+
+async def test_many_broken_entries_make_one_short_warning(sleeps: list[float]) -> None:
+    good = fixture("hf_daily_papers.json")
+    body = [{"paper": {}} for _ in range(200)] + good
+    with respx.mock() as router:
+        router.get(HF_PAPERS_URL).respond(200, json=body)
+        async with httpx.AsyncClient() as client:
+            adapter = HFPapersAdapter(HuggingFaceSettings())
+            items = await adapter.fetch(client)
+    assert len(items) == len(good)
+    assert len(adapter.warnings) == 1  # trước đây 200 dòng, nối vào source_runs mỗi lần quét
+    assert adapter.warnings[0].startswith(f"bỏ 200/{200 + len(good)} phần tử hỏng (lỗi đầu: ")
+    assert len(adapter.warnings[0]) < 200
+
+
+async def test_warnings_reset_between_fetches(sleeps: list[float]) -> None:
+    good = fixture("hf_daily_papers.json")
+    with respx.mock() as router:
+        route = router.get(HF_PAPERS_URL)
+        route.respond(200, json=[{"paper": {}}, *good])
+        async with httpx.AsyncClient() as client:
+            adapter = HFPapersAdapter(HuggingFaceSettings())
+            await adapter.fetch(client)
+            route.respond(200, json=good)
+            await adapter.fetch(client)
+    assert adapter.warnings == []
 
 
 async def test_hf_models_all_entries_broken_raises(sleeps: list[float]) -> None:
