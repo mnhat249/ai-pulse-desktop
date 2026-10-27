@@ -704,7 +704,7 @@ class FloatingWidget(ctk.CTk):  # type: ignore[misc]
                 "Chưa có tóm tắt tiếng Việt: lưu khóa bằng python -m app.setkey gemini",
                 theme.MUTED,
             )
-            if details is not None and details.excerpt and details.excerpt != cluster.excerpt:
+            if details is not None and details.excerpt and not cluster.lead_text:
                 self._lead(body, "Nội dung gốc")
                 self._paragraph(body, details.excerpt)
         if cluster.summarized:

@@ -86,6 +86,11 @@ def _names(text: str) -> list[str]:
         ("Whisper speech-to-text", ["ASR"]),  # khớp theo alias
         ("RAG, MoE, LoRA, MCP, RLHF and DPO", ["RAG", "MoE", "LoRA", "MCP"]),  # tối đa 4
         ("Tool use and skill files", []),  # từ thường (một chữ hoa) không gắn chip
+        ("A dashboard with React and Vue", []),  # "React" không phải "ReAct"
+        ("the product flops", []),  # "flops" không phải "FLOPS"
+        ("1e25 FLOPs of training", ["FLOPS"]),
+        ("Sora is a text-to-video model", ["T2V"]),  # không còn gắn nhầm "T2I"
+        ("Better text-to-image prompts", ["T2I"]),
     ],
 )
 def test_find_terms(text: str, expected: list[str]) -> None:

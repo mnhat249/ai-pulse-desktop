@@ -50,14 +50,18 @@ def text_without_links(record: dict[str, Any]) -> str:
     return raw.decode("utf-8", errors="ignore")
 
 
+def _first_line(text: str) -> str:
+    """Dòng đầu có chữ, gộp khoảng trắng; bài Bluesky tối đa 300 ký tự nên không cắt."""
+    return next((" ".join(line.split()) for line in text.splitlines() if line.strip()), "")
+
+
 def build_post(post: dict[str, Any]) -> RawItem:
     record = post["record"]
     handle = post["author"]["handle"]
     text = (record.get("text") or "").strip()
     external = (post.get("embed") or {}).get("external") or {}
     extra = " ".join(p for p in (external.get("title"), external.get("description")) if p)
-    lines = [line.strip() for line in text_without_links(record).splitlines() if line.strip()]
-    title = lines[0] if lines else extra  # bài Bluesky tối đa 300 ký tự: giữ nguyên
+    title = _first_line(text_without_links(record)) or _first_line(text) or extra
     return RawItem(
         source="bluesky",
         source_id=post["uri"],

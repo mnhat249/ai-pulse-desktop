@@ -87,9 +87,11 @@ def search(terms: Iterable[Term], query: str = "", group: str = ALL_GROUPS) -> l
 def _name_regex(name: str) -> str:
     parts = [re.escape(p) for p in re.split(r"[\s-]+", name.strip()) if p]
     body = r"[\s-]+".join(parts)
-    # viết tắt ngắn phân biệt hoa thường ("ANN" không khớp "Ann", "RAG" không khớp "rag")
-    flags = "" if name.isupper() and len(name) <= 5 else "(?i:"
-    return rf"(?<![^\W_]){flags}{body}{')' if flags else ''}(?![^\W_])"
+    # tên có chữ hoa phân biệt hoa thường ("ReAct" không khớp "React", "ANN" không khớp "Ann");
+    # tên toàn chữ thường (alias như "speech-to-text") thì không phân biệt
+    if name != name.lower():
+        return rf"(?<![^\W_]){body}(?![^\W_])"
+    return rf"(?<![^\W_])(?i:{body})(?![^\W_])"
 
 
 @lru_cache(maxsize=256)

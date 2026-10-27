@@ -24,6 +24,9 @@ class TopicRule:
 # 7B, 70B, 1.5B...; "$5B" (tiền) không tính. "agent-7b" khớp vì gạch nối không phải chữ
 _PARAM_COUNT = r"(?<![\w.$€£])\d{1,3}(?:\.\d)?b(?![^\W_])"
 
+# Opus/Sonnet/Haiku 3 trở lên; codec "Opus 1.5", "Sonnet 18" (thơ) thì không
+_CLAUDE_VERSION = r"(?<!\w)(?:opus|sonnet|haiku)[\s-]*[3-9](?:\.\d)?(?![\d.])"
+
 DEFAULT_RULES: tuple[TopicRule, ...] = (
     TopicRule(
         key="models",
@@ -41,7 +44,6 @@ DEFAULT_RULES: tuple[TopicRule, ...] = (
             "grok",
             "nemotron",
             "olmo",
-            "minimax",
             "open weight",
             "open weights",
             "open-weight model",
@@ -54,9 +56,10 @@ DEFAULT_RULES: tuple[TopicRule, ...] = (
         ),
         patterns=(
             _PARAM_COUNT,
-            r"(?<![\w.-])o[134](?:-mini|-pro)?(?![\w.-])",  # o1, o3-mini, o4-pro
+            r"(?-i:(?<![\w.-])o[134](?:-mini|-pro)?(?![\w.-]))",  # o3-mini; "O3" (ozone) thì không
             r"(?<!\w)phi[\s-]*\d",
-            r"(?<!\w)(?:opus|sonnet|haiku)[\s-]*\d",  # phiên bản model Claude
+            _CLAUDE_VERSION,
+            r"(?<!\w)minimax[\s-]*m\d",  # MiniMax-M2; "minimax algorithm" thì không
         ),
         sources=("hf_models",),
     ),
@@ -67,7 +70,6 @@ DEFAULT_RULES: tuple[TopicRule, ...] = (
             "claude",
             "anthropic",
             "claude code",
-            "sonnet",
             "mcp",
             "mcp server",
             "agent skills",
@@ -79,7 +81,7 @@ DEFAULT_RULES: tuple[TopicRule, ...] = (
             "slash command",
             "slash commands",
         ),
-        patterns=(r"(?<!\w)(?:opus|haiku)[\s-]*\d",),
+        patterns=(_CLAUDE_VERSION,),
     ),
     TopicRule(
         key="aigi",
@@ -126,10 +128,11 @@ _BOUNDARY_AFTER = r"(?![^\W_])"
 
 @lru_cache(maxsize=64)
 def _compile(rule: TopicRule) -> re.Pattern[str] | None:
-    alternatives = [
-        _BOUNDARY_BEFORE + _keyword_regex(k) + _BOUNDARY_AFTER for k in rule.keywords if k.strip()
-    ]
-    alternatives += rule.patterns
+    words = [_keyword_regex(k) for k in rule.keywords if k.strip()]
+    alternatives = (
+        [_BOUNDARY_BEFORE + "(?:" + "|".join(words) + ")" + _BOUNDARY_AFTER] if words else []
+    )
+    alternatives += rule.patterns  # một nhóm chung cho từ khóa: dò nhanh hơn nhiều nhánh riêng
     if not alternatives:
         return None
     return re.compile("|".join(alternatives), re.IGNORECASE)

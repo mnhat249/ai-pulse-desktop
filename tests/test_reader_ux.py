@@ -15,7 +15,7 @@ from app.pipeline.digest import load_prompt
 from app.storage import ui_queries
 from app.storage.db import migrate
 from app.storage.ui_queries import open_reader, plain_excerpt
-from app.ui.model import ALL_TOPICS, UIModel
+from app.ui.model import ALL_TOPICS, MY_TOPICS, UIModel
 from tests.helpers import digest_json
 from tests.helpers_ui import ISO
 from tests.test_widget import card_texts_of
@@ -143,8 +143,9 @@ def test_page_size_setting() -> None:
 def test_digest_intro_is_optional_and_link_free() -> None:
     assert Digest.model_validate(digest_json()).intro is None  # tóm tắt cũ vẫn hợp lệ
     assert Digest.model_validate(digest_json(intro="Nhóm A ra công cụ B.")).intro
-    with pytest.raises(ValidationError):
-        Digest.model_validate(digest_json(intro="Đọc thêm ở github.com/acme/tool nhé"))
+    # giới thiệu có link: chỉ bỏ giới thiệu, bản tóm tắt vẫn giữ (không tốn thêm quota)
+    linked = Digest.model_validate(digest_json(intro="Đọc thêm ở github.com/acme/tool nhé"))
+    assert linked.intro is None and linked.innovation == "a"
 
 
 def test_prompt_asks_for_intro_and_full_title() -> None:
@@ -178,6 +179,9 @@ def test_cluster_view_lead_text_prefers_intro_then_excerpt(tmp_path: Path) -> No
 def test_plain_excerpt_cuts_at_sentence_end_when_possible() -> None:
     text = "Câu một khá dài để vượt nửa giới hạn. Câu hai " + "rất dài " * 30
     assert plain_excerpt(text, 60) == "Câu một khá dài để vượt nửa giới hạn."
+    # "e.g." hay "vs." giữa câu (sau đó là chữ thường) không phải hết câu
+    abbrev = "Nhiều công cụ tốt, e.g. ruff và mypy chạy rất nhanh trên dự án lớn " + "nữa " * 30
+    assert not plain_excerpt(abbrev, 60).endswith("e.g.")
     words = plain_excerpt("chữ " * 100, 50)
     assert words.endswith("…") and not words[:-1].endswith(" ") and len(words) <= 51
 
@@ -247,3 +251,78 @@ def test_wrap_follows_feed_width(fresh: Env) -> None:  # noqa: F811
     assert wrap.width == 700 - 44
     wrap.resize(10)
     assert wrap.width == 200  # không nhỏ hơn mức tối thiểu
+
+
+# ---- lọc chủ đề không làm đứng giao diện (review: 1,8 s mỗi lần làm mới) --------------------
+
+
+def test_topic_scan_stops_early_and_runs_once_per_refresh(tmp_path: Path) -> None:
+    path = tmp_path / "scan.db"
+    migrate(path)
+    conn = sqlite3.connect(path)
+    for n in range(400):  # cụm nào cũng khớp "Dùng Claude"
+        _add(conn, 1000.0 - n, f"Claude Code tip {n}")
+    conn.commit()
+    conn.close()
+    reader = open_reader(path)
+    ui_queries._row_topics.cache_clear()
+    model = UIModel(reader, limit=30, page_size=6)
+    assert model.topic == MY_TOPICS
+    assert len(model.clusters()) == 6 and model.page_count() == 5
+    # dừng khi đủ 30 tin, không dò regex cả 400 cụm; thanh trang không quét lại
+    assert ui_queries._row_topics.cache_info().misses == 30
+    model.clusters()
+    model.page_count()
+    assert ui_queries._row_topics.cache_info().misses == 30  # lần sau dùng kết quả đã nhớ
+    reader.close()
+
+
+def test_count_clusters_is_capped(many) -> None:  # type: ignore[no-untyped-def]
+    _, reader = many
+    assert ui_queries.count_clusters(reader, cap=5) == 5
+    assert ui_queries.count_clusters(reader, topics=("claude",), cap=3) == 3
+
+
+# ---- "Nội dung gốc" không lặp đoạn mở đầu với bài dài ----------------------------------------
+
+
+def test_long_unsummarized_card_does_not_repeat_the_excerpt(fresh: Env) -> None:  # noqa: F811
+    widget = fresh.widget
+    cid = fresh.ids["plain"]
+    db = fresh.path.parent / "ui.db"
+    long_text = "Rust 2.0 mang tới nhiều thay đổi lớn cho trình biên dịch. " * 12
+    conn = sqlite3.connect(db)
+    conn.execute("UPDATE raw_items SET text = ? WHERE title = 'Rust 2.0 released'", (long_text,))
+    conn.commit()
+    try:
+        widget.refresh()
+        widget.toggle_card(cid)
+        texts = card_texts_of(widget._cards[cid])
+        assert "Nội dung gốc" not in texts
+        assert len({t for t in texts if t.startswith("Rust 2.0 mang tới")}) == 1
+    finally:
+        widget._model.expanded.discard(cid)
+        conn.execute("UPDATE raw_items SET text = '' WHERE title = 'Rust 2.0 released'")
+        conn.commit()
+        conn.close()
+        widget.refresh()
+
+
+def test_glossary_tab_is_built_only_when_opened(fresh: Env) -> None:  # noqa: F811
+    widget = fresh.widget
+    widget.glossary.rendered = False
+    for child in widget.glossary._list.winfo_children():
+        child.destroy()
+    widget.refresh()
+    assert not widget.glossary.rendered
+    widget._tabs.set("Thuật ngữ")
+    widget._on_tab()
+    assert widget.glossary.rendered and widget.glossary.shown
+    widget._tabs.set("Tin tức")
+
+
+def test_glossary_file_ships_in_the_package() -> None:
+    import tomllib
+
+    data = tomllib.loads(Path("pyproject.toml").read_text(encoding="utf-8"))
+    assert "glossary/*.toml" in data["tool"]["setuptools"]["package-data"]["app"]

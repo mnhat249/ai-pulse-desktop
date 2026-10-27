@@ -417,6 +417,7 @@ def test_full_refresh_keeps_scroll_position(fresh: Env) -> None:
         )
         conn.execute("INSERT INTO cluster_items VALUES (?, ?)", (cur.lastrowid, item.lastrowid))
     conn.commit()
+    widget._model.page_size = 20  # một trang đủ dài để cuộn
     try:
         widget.refresh()
         widget.update()
@@ -435,6 +436,7 @@ def test_full_refresh_keeps_scroll_position(fresh: Env) -> None:
         conn.execute("DELETE FROM raw_items WHERE source_id LIKE 'pad%'")
         conn.commit()
         conn.close()
+        widget._model.page_size = 6
         widget.refresh()
 
 

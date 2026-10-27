@@ -38,13 +38,19 @@ class Digest(BaseModel):
     is_noise: bool
     noise_reason: str | None = None
 
-    @field_validator("title_vi", "intro", "innovation", "impact", "noise_reason")
+    @field_validator("title_vi", "innovation", "impact", "noise_reason")
     @classmethod
     def no_links(cls, value: str | None) -> str | None:
         """LLM không được viết link: link của tin luôn lấy từ bài gốc."""
         if value is not None and LINK_PATTERN.search(value):
             raise ValueError("văn bản tóm tắt không được chứa link")
         return value
+
+    @field_validator("intro")
+    @classmethod
+    def drop_intro_with_link(cls, value: str | None) -> str | None:
+        """Giới thiệu chứa link thì bỏ riêng nó, khỏi mất cả bản tóm tắt (và tốn thêm quota)."""
+        return None if value is not None and LINK_PATTERN.search(value) else value
 
 
 class Cluster(BaseModel):

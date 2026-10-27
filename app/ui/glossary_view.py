@@ -68,9 +68,11 @@ class GlossaryView(ctk.CTkFrame):  # type: ignore[misc]
             self._list._parent_canvas, TEXT_MARGIN, width - TEXT_MARGIN, scaled_by=self._list
         )
         self._query.trace_add("write", lambda *_: self._schedule())
-        self.render()
+        self.rendered = False  # dựng thẻ khi mở tab lần đầu, không làm chậm lúc mở app
 
     def focus_search(self) -> None:
+        if not self.rendered:
+            self.render()
         self._entry.focus_set()
 
     def show_term(self, term: str) -> None:
@@ -93,6 +95,7 @@ class GlossaryView(ctk.CTkFrame):  # type: ignore[misc]
         if self._job is not None:
             self.after_cancel(self._job)
             self._job = None
+        self.rendered = True
         for child in self._list.winfo_children():
             child.destroy()
         self._wrap.forget_dead()

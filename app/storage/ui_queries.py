@@ -8,6 +8,7 @@ import re
 import sqlite3
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
+from functools import lru_cache
 from pathlib import Path
 from typing import Any, Literal
 
@@ -162,26 +163,44 @@ _COUNT = (
 )
 
 
+@lru_cache(maxsize=4096)
+def _row_topics(
+    digest: str | None, titles: str, sources: str, rules: tuple[TopicRule, ...]
+) -> tuple[str, ...]:
+    """Chủ đề của một cụm, nhớ theo nội dung: lần làm mới sau không phải dò regex lại."""
+    return _topics_of(
+        json.loads(digest) if digest else None,
+        titles.split("\n"),
+        tuple(sources.split(",")),
+        rules,
+    )
+
+
 def _topic_ids(
     conn: sqlite3.Connection,
     where: str,
     params: list[object],
     topics: tuple[str, ...],
     rules: tuple[TopicRule, ...],
+    stop_after: int,
 ) -> list[int]:
-    """Id các cụm khớp chủ đề, theo thứ tự hiển thị, trong `MAX_TOPIC_SCAN_ROWS` cụm đầu."""
-    rows = conn.execute(
-        _TOPIC_SELECT + where + _ORDER + " LIMIT ?",
-        [*params, MAX_TOPIC_SCAN_ROWS],
-    ).fetchall()
-    wanted = set(topics)
+    """Id các cụm khớp chủ đề, theo thứ tự hiển thị, trong `MAX_TOPIC_SCAN_ROWS` cụm đầu.
+
+    Dừng khi đã đủ `stop_after` cụm; chỉ dò các luật của chủ đề đang lọc.
+    """
+    wanted = tuple(rule for rule in rules if rule.key in topics)
     found: list[int] = []
-    for row in rows:
-        digest = json.loads(row["digest"]) if row["digest"] else None
-        titles = (row["titles"] or "").split("\n")
-        sources = tuple((row["srcs"] or "").split(","))
-        if wanted.intersection(_topics_of(digest, titles, sources, rules)):
+    if stop_after <= 0 or not wanted:
+        return found
+    cursor = conn.execute(
+        _TOPIC_SELECT + where + _ORDER + " LIMIT ?", [*params, MAX_TOPIC_SCAN_ROWS]
+    )
+    for row in cursor:
+        if _row_topics(row["digest"], row["titles"] or "", row["srcs"] or "", wanted):
             found.append(int(row["id"]))
+            if len(found) >= stop_after:
+                break
+    cursor.close()
     return found
 
 
@@ -206,7 +225,7 @@ def list_clusters(
             _SELECT + where + _ORDER + " LIMIT ? OFFSET ?", [*params, limit, offset]
         ).fetchall()
         return [_build_view(conn, row, topic_rules) for row in rows]
-    page = _topic_ids(conn, where, params, topics, topic_rules)[offset : offset + limit]
+    page = _topic_ids(conn, where, params, topics, topic_rules, offset + limit)[offset:]
     if not page:
         return []
     marks = ",".join("?" * len(page))
@@ -222,13 +241,14 @@ def count_clusters(
     source: str | None = None,
     topics: tuple[str, ...] | None = None,
     topic_rules: tuple[TopicRule, ...] = DEFAULT_RULES,
+    cap: int = MAX_TOPIC_SCAN_ROWS,
 ) -> int:
-    """Số cụm khớp bộ lọc (để tính số trang); cùng quy tắc với `list_clusters`."""
+    """Số cụm khớp bộ lọc, tối đa `cap` (để tính số trang); cùng quy tắc với `list_clusters`."""
     where, params = _filter_sql(view, source)
     if topics is not None:
-        return len(_topic_ids(conn, where, params, topics, topic_rules))
+        return len(_topic_ids(conn, where, params, topics, topic_rules, cap))
     row = conn.execute(_COUNT + where, params).fetchone()
-    return int(row[0])
+    return min(int(row[0]), cap)
 
 
 def get_cluster(conn: sqlite3.Connection, cluster_id: int) -> ClusterView | None:
@@ -276,7 +296,7 @@ def last_error(conn: sqlite3.Connection, source: str) -> str | None:
 EXCERPT_CHARS = 300
 LEAD_CHARS = 280  # đoạn mở đầu dưới tiêu đề khi chưa có giới thiệu của LLM
 _TAG = re.compile(r"<[^>]*>")
-_SENTENCE_END = re.compile(r"[.!?](?=\s)")
+_SENTENCE_END = re.compile(r"[.!?](?=\s+(\S))")
 
 
 def plain_excerpt(text: str | None, limit: int = EXCERPT_CHARS) -> str:
@@ -288,7 +308,11 @@ def plain_excerpt(text: str | None, limit: int = EXCERPT_CHARS) -> str:
     if len(clean) <= limit:
         return clean
     head = clean[: limit + 1]
-    ends = [m.end() for m in _SENTENCE_END.finditer(head)]
+    ends = [
+        m.end()
+        for m in _SENTENCE_END.finditer(head)
+        if m.group(1)[0].isupper() or m.group(1)[0].isdigit()
+    ]
     if ends and ends[-1] > limit // 2:
         return head[: ends[-1]]
     cut = head.rfind(" ", 0, limit)

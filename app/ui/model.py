@@ -31,14 +31,15 @@ class UIModel:
     rules: tuple[TopicRule, ...] = DEFAULT_RULES
     enabled_topics: tuple[str, ...] = DEFAULT_KEYS
     topic: str = MY_TOPICS  # nhãn đang chọn: MY_TOPICS, ALL_TOPICS hoặc nhãn một chủ đề
+    _total: int | None = field(default=None, init=False, repr=False)
 
     def set_filter_label(self, label: str) -> None:
         self.view = FILTER_LABELS.get(label, "all")
-        self.page = 0
+        self.page, self._total = 0, None
 
     def set_source_label(self, label: str) -> None:
         self.source = None if label == ALL_SOURCES else label
-        self.page = 0
+        self.page, self._total = 0, None
 
     def topic_choices(self) -> list[str]:
         labels = [r.label for r in self.rules if r.key in self.enabled_topics]
@@ -47,7 +48,7 @@ class UIModel:
     def set_topic_label(self, label: str) -> None:
         """Nhãn lạ (ví dụ chủ đề đã bị tắt trong cài đặt) quay về "★ Của tôi"."""
         self.topic = label if label in self.topic_choices() else MY_TOPICS
-        self.page = 0
+        self.page, self._total = 0, None
 
     def topic_keys(self) -> tuple[str, ...] | None:
         """Khóa chủ đề dùng để lọc; None = không lọc."""
@@ -58,17 +59,21 @@ class UIModel:
         return tuple(r.key for r in self.rules if r.label == self.topic) or None
 
     def total(self) -> int:
-        count = ui_queries.count_clusters(
+        """Đọc lại số tin khớp bộ lọc (tối đa `limit`) và nhớ cho `page_count`."""
+        self._total = ui_queries.count_clusters(
             self.reader,
             view=self.view,
             source=self.source,
             topics=self.topic_keys(),
             topic_rules=self.rules,
+            cap=self.limit,
         )
-        return min(count, self.limit)
+        return self._total
 
     def page_count(self) -> int:
-        return max(1, -(-self.total() // self.page_size))
+        """Số trang theo lần đọc gần nhất (`clusters()` đọc lại), để thanh trang không quét DB."""
+        total = self._total if self._total is not None else self.total()
+        return max(1, -(-total // self.page_size))
 
     def next_page(self) -> bool:
         if self.page + 1 >= self.page_count():
@@ -84,6 +89,7 @@ class UIModel:
 
     def clusters(self) -> list[ClusterView]:
         """Tin của trang hiện tại; trang vượt quá (vừa đọc hết trang cuối) lùi về trang cuối."""
+        self.total()
         self.page = min(self.page, self.page_count() - 1)
         offset = self.page * self.page_size
         return ui_queries.list_clusters(

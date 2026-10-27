@@ -124,6 +124,12 @@ def test_real_titles_do_not_match(prefix: str) -> None:
         ("Grok 5 is out", ("models",)),
         ("Photo3D and phinance apps", ()),
         ("Version 0.4.3 of foo", ()),
+        ("Opus 1.5 audio codec ships", ()),  # codec âm thanh, không phải Claude Opus
+        ("Shakespeare sonnet 18", ()),
+        ("Minimax algorithm explained", ()),
+        ("MiniMax-M2 open weights", ("models",)),
+        ("O3 ozone levels rise", ()),
+        ("Claude Sonnet 4.5 and Opus 5", ("models", "claude")),
     ],
 )
 def test_match_topics_edge_cases(text: str, expected: tuple[str, ...]) -> None:

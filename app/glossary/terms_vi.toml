@@ -332,6 +332,7 @@ full = "CLAUDE.md"
 group = "Claude & công cụ"
 vi = "File ghi chú cho Claude trong dự án: lệnh build/test, quy tắc code, bài học cũ. Claude đọc nó mỗi khi bắt đầu phiên làm việc."
 example = "Ghi vào CLAUDE.md: 'chạy python scripts/check.py trước khi commit'."
+aliases = ["claude.md"]
 
 [[term]]
 term = "Agent SDK"
@@ -425,9 +426,17 @@ example = "App đọc báo dùng TTS giọng miền Bắc."
 term = "T2I"
 full = "Text-to-Image"
 group = "Ảnh, âm thanh, đa phương thức"
-vi = "Tạo ảnh từ mô tả bằng chữ. Tương tự T2V là tạo video, I2V là biến ảnh thành video."
+vi = "Tạo ảnh từ mô tả bằng chữ."
 example = "Gõ 'con mèo đội nón lá' để model T2I vẽ."
-aliases = ["text-to-image", "T2V", "I2V", "text-to-video"]
+aliases = ["text-to-image"]
+
+[[term]]
+term = "T2V"
+full = "Text-to-Video"
+group = "Ảnh, âm thanh, đa phương thức"
+vi = "Tạo video từ mô tả bằng chữ. I2V (image-to-video) là biến một ảnh tĩnh thành đoạn video."
+example = "Sora và Veo là model T2V."
+aliases = ["text-to-video", "I2V", "image-to-video"]
 
 # ---- Hạ tầng & phần cứng -------------------------------------------------------------------
 
