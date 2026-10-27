@@ -162,7 +162,8 @@ async def test_bluesky_keeps_only_ai_posts_with_correct_fields() -> None:
         assert it.source == "bluesky" and it.author == "simonwillison.net"
         assert re.fullmatch(r"https://bsky\.app/profile/simonwillison\.net/post/\w+", it.url)
         assert it.metrics["likes"] >= 0 and it.published_at.tzinfo is not None
-        assert it.title and len(it.title) <= 110
+        assert it.title and len(it.title) <= 300
+        assert not it.title.endswith(("...", "…"))  # chữ link rút gọn bị bỏ
 
 
 async def test_bluesky_reposts_are_skipped() -> None:
@@ -208,13 +209,15 @@ def test_bluesky_post_with_external_link_embed() -> None:
     assert result.metrics == {"likes": 7.0, "reposts": 0.0, "replies": 0.0}
 
 
-def test_bluesky_long_first_line_is_truncated_for_the_title() -> None:
+def test_bluesky_long_first_line_is_kept_whole_for_the_title() -> None:
+    line = "word " * 59 + "end"
     post = {
         "uri": "at://did:plc:x/app.bsky.feed.post/3k1",
         "author": {"handle": "a.example"},
-        "record": {"text": "x" * 300, "createdAt": "2026-10-23T10:00:00Z"},
+        "record": {"text": f"{line}\nsecond line", "createdAt": "2026-10-23T10:00:00Z"},
     }
-    assert len(build_post(post).title) == 110 and build_post(post).title.endswith("…")
+    title = build_post(post).title
+    assert title == line and not title.endswith("…")
 
 
 # ---- cài đặt: bật/tắt nguồn và thêm feed -------------------------------------------------

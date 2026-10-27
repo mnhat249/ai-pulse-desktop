@@ -18,10 +18,10 @@ class WindowState:
 
     x: int = 40
     y: int = 80
-    width: int = 400
+    width: int = 460
     height: int = 560
     always_on_top: bool = True
-    topic: str = ""  # nhãn chủ đề đang chọn; trống = mặc định "Chủ đề của tôi"
+    topic: str = ""  # nhãn chủ đề đang chọn; trống = mặc định "★ Của tôi"
 
     @property
     def geometry(self) -> str:

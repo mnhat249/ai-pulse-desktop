@@ -31,13 +31,14 @@ class Digest(BaseModel):
 
     cluster_id: int
     title_vi: str
+    intro: str | None = None  # tóm tắt cũ (trước khi có trường này) không có
     innovation: str
     impact: str
     importance: int = Field(ge=1, le=5)
     is_noise: bool
     noise_reason: str | None = None
 
-    @field_validator("title_vi", "innovation", "impact", "noise_reason")
+    @field_validator("title_vi", "intro", "innovation", "impact", "noise_reason")
     @classmethod
     def no_links(cls, value: str | None) -> str | None:
         """LLM không được viết link: link của tin luôn lấy từ bài gốc."""

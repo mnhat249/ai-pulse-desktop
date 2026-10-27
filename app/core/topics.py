@@ -1,4 +1,4 @@
-"""Chủ đề tin (Model AI, Claude, AI tạo ảnh/video): khớp từ khóa nguyên từ.
+"""Chủ đề tin (Model mới, Dùng Claude, Ảnh/video AI): khớp từ khóa nguyên từ.
 
 Hàm thuần, không phụ thuộc DB hay Tk. Từ khóa được so khớp theo ranh giới từ (`flux` không
 khớp `fluxion`, `veo` không khớp `video`); dấu cách trong từ khóa khớp cả dấu gạch nối.
@@ -27,7 +27,7 @@ _PARAM_COUNT = r"(?<![\w.$€£])\d{1,3}(?:\.\d)?b(?![^\W_])"
 DEFAULT_RULES: tuple[TopicRule, ...] = (
     TopicRule(
         key="models",
-        label="Model AI",
+        label="Model mới",
         keywords=(
             "gpt",
             "gemini",
@@ -38,6 +38,10 @@ DEFAULT_RULES: tuple[TopicRule, ...] = (
             "mixtral",
             "deepseek",
             "kimi",
+            "grok",
+            "nemotron",
+            "olmo",
+            "minimax",
             "open weight",
             "open weights",
             "open-weight model",
@@ -45,19 +49,41 @@ DEFAULT_RULES: tuple[TopicRule, ...] = (
             "benchmark",
             "model release",
             "new model",
+            "open-source model",
+            "model card",
         ),
-        patterns=(_PARAM_COUNT,),
+        patterns=(
+            _PARAM_COUNT,
+            r"(?<![\w.-])o[134](?:-mini|-pro)?(?![\w.-])",  # o1, o3-mini, o4-pro
+            r"(?<!\w)phi[\s-]*\d",
+            r"(?<!\w)(?:opus|sonnet|haiku)[\s-]*\d",  # phiên bản model Claude
+        ),
         sources=("hf_models",),
     ),
     TopicRule(
         key="claude",
-        label="Claude",
-        keywords=("claude", "anthropic", "claude code", "sonnet", "mcp"),
+        label="Dùng Claude",
+        keywords=(
+            "claude",
+            "anthropic",
+            "claude code",
+            "sonnet",
+            "mcp",
+            "mcp server",
+            "agent skills",
+            "subagent",
+            "subagents",
+            "claude.md",
+            "skill.md",
+            "agent sdk",
+            "slash command",
+            "slash commands",
+        ),
         patterns=(r"(?<!\w)(?:opus|haiku)[\s-]*\d",),
     ),
     TopicRule(
         key="aigi",
-        label="AI tạo ảnh/video",
+        label="Ảnh/video AI",
         keywords=(
             "diffusion",
             "stable diffusion",

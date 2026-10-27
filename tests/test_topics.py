@@ -62,6 +62,7 @@ def test_fixture_titles_are_loaded() -> None:
         ("bsky:Notes on Kimi", "models"),
         ("hf:black-forest-labs/flux-3", "aigi"),
         ("bsky:I built a Command", "claude"),
+        ("bsky:I built a Command", "models"),  # "Claude Opus 5.5" là tên model
         ('bsky:"Anthropic told', "claude"),
     ],
 )
@@ -108,12 +109,21 @@ def test_real_titles_do_not_match(prefix: str) -> None:
         ("GPT-5 hits benchmark", ("models",)),
         ("CHATGPT is popular", ()),
         ("Haiku poems", ()),
-        ("Haiku 4 is fast", ("claude",)),
+        ("Haiku 4 is fast", ("models", "claude")),
         ("Opus codec 1.5", ()),
         ("Claude Code adds MCP", ("claude",)),
         ("open-weights release", ("models",)),
         ("OPEN WEIGHT", ("models",)),
         ("Claude drives Stable Diffusion", ("claude", "aigi")),
+        ("Writing Agent Skills and subagents for your repo", ("claude",)),
+        ("My CLAUDE.md workflow", ("claude",)),
+        ("New slash commands in the agent SDK", ("claude",)),
+        ("Hooks for your build pipeline", ()),  # "hook"/"workflow" đứng một mình không tính
+        ("Gemma 4 model card", ("models",)),
+        ("Phi-5 and o3-mini pricing", ("models",)),
+        ("Grok 5 is out", ("models",)),
+        ("Photo3D and phinance apps", ()),
+        ("Version 0.4.3 of foo", ()),
     ],
 )
 def test_match_topics_edge_cases(text: str, expected: tuple[str, ...]) -> None:
@@ -145,7 +155,7 @@ def test_settings_overrides_from_toml(monkeypatch: pytest.MonkeyPatch, tmp_path:
     rules = {r.key: r for r in topics.resolved_rules()}
     assert rules["claude"].label == "Cờ-lốt" and rules["claude"].keywords == ("cloud",)
     assert rules["claude"].patterns == ()
-    assert rules["models"].label == "Model AI"
+    assert rules["models"].label == "Model mới"
     assert rules["chip"].keywords == ("gpu", "nvidia")
     assert "empty" not in rules
     assert topics.enabled_keys() == ("claude", "chip")
@@ -298,16 +308,16 @@ def test_model_topic_choices_and_filtering(seeded) -> None:  # type: ignore[no-u
     assert model.topic_choices() == [
         MY_TOPICS,
         ALL_TOPICS,
-        "Model AI",
-        "Claude",
-        "AI tạo ảnh/video",
+        "Model mới",
+        "Dùng Claude",
+        "Ảnh/video AI",
     ]
     assert [c.id for c in model.clusters()] == [ids["hot"]]
     model.set_topic_label(ALL_TOPICS)
     assert len(model.clusters()) == 3
-    model.set_topic_label("Claude")
+    model.set_topic_label("Dùng Claude")
     assert model.topic_keys() == ("claude",) and model.clusters() == []
-    model.set_topic_label("Model AI")
+    model.set_topic_label("Model mới")
     assert [c.id for c in model.clusters()] == [ids["hot"]]
     model.set_topic_label("không có chủ đề này")
     assert model.topic == MY_TOPICS
@@ -316,9 +326,9 @@ def test_model_topic_choices_and_filtering(seeded) -> None:  # type: ignore[no-u
 def test_model_respects_enabled_topics(seeded) -> None:  # type: ignore[no-untyped-def]
     _, _, reader = seeded
     model = UIModel(reader, enabled_topics=("claude",))
-    assert model.topic_choices() == [MY_TOPICS, ALL_TOPICS, "Claude"]
+    assert model.topic_choices() == [MY_TOPICS, ALL_TOPICS, "Dùng Claude"]
     assert model.topic_keys() == ("claude",) and model.clusters() == []
-    model.set_topic_label("Model AI")  # đã tắt nên quay về mặc định
+    model.set_topic_label("Model mới")  # đã tắt nên quay về mặc định
     assert model.topic == MY_TOPICS
     assert UIModel(reader, enabled_topics=()).topic_keys() is None
 
@@ -343,12 +353,11 @@ def test_topic_menu_filters_and_remembers(fresh: Env) -> None:  # noqa: F811
     widget.refresh()
     assert any("Công cụ agent mới" in t for t in card_texts(widget))
     assert not any("Rust 2.0" in t for t in card_texts(widget))
-    widget._topic_menu.set("Claude")
-    widget._on_topic("Claude")
+    widget._on_topic("Dùng Claude")
     pump_until(widget, lambda: fresh.path.exists())
-    assert load_state(fresh.path).topic == "Claude"
+    assert load_state(fresh.path).topic == "Dùng Claude"
+    assert widget._topic_bar.get() == "Dùng Claude"
     assert any("Chưa có tin nào khớp" in t for t in card_texts(widget))
-    widget._topic_menu.set(ALL_TOPICS)
     widget._on_topic(ALL_TOPICS)
     assert any("Rust 2.0" in t for t in card_texts(widget))
-    assert widget._model.topic == ALL_TOPICS
+    assert widget._model.topic == ALL_TOPICS and widget._topic_bar.get() == ALL_TOPICS

@@ -9,7 +9,7 @@ import sqlite3
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Literal
+from typing import Any, Literal
 
 from app.core import sources
 from app.core.topics import DEFAULT_RULES, TopicRule, match_topics
@@ -41,6 +41,13 @@ class ClusterView:
     last_seen: datetime
     labels: tuple[str, ...] = field(default_factory=tuple)
     topics: tuple[str, ...] = field(default_factory=tuple)  # khóa chủ đề khớp (xem core.topics)
+    intro: str | None = None  # đoạn giới thiệu do LLM viết; tóm tắt cũ không có
+    excerpt: str = ""  # đoạn đầu nội dung gốc, dùng khi chưa có `intro`
+
+    @property
+    def lead_text(self) -> str:
+        """Đoạn mở đầu hiện dưới tiêu đề: giới thiệu của LLM, không có thì nội dung gốc."""
+        return self.intro or self.excerpt
 
     @property
     def source_text(self) -> str:
@@ -69,28 +76,38 @@ def _utc(value: str | None) -> datetime:
     return datetime.fromisoformat(value).replace(tzinfo=UTC)
 
 
+def _topics_of(
+    digest: dict[str, Any] | None,
+    titles: list[str],
+    sources: tuple[str, ...],
+    rules: tuple[TopicRule, ...],
+) -> tuple[str, ...]:
+    parts = list(titles)
+    if digest:
+        parts += [digest.get(k) or "" for k in ("title_vi", "intro", "innovation", "impact")]
+    return match_topics("\n".join(parts), rules, sources)
+
+
 def _build_view(
     conn: sqlite3.Connection, row: sqlite3.Row, rules: tuple[TopicRule, ...] = DEFAULT_RULES
 ) -> ClusterView:
     members = conn.execute(
-        "SELECT r.source, r.title, r.url FROM raw_items r "
+        "SELECT r.source, r.title, r.url, r.text FROM raw_items r "
         "JOIN cluster_items ci ON ci.item_id = r.id WHERE ci.cluster_id = ? ORDER BY r.id",
         (row["id"],),
     ).fetchall()
     digest = json.loads(row["digest"]) if row["digest"] else None
     sources = tuple(dict.fromkeys(m["source"] for m in members))
     labels = tuple(dict.fromkeys(source_label(s) for s in sources))
-    original = members[0]["title"] if members else ""
-    title = digest["title_vi"] if digest else original
-    innovation = digest["innovation"] if digest else None
-    impact = digest["impact"] if digest else None
-    haystack = "\n".join([title, *(m["title"] for m in members), innovation or "", impact or ""])
+    titles = [m["title"] for m in members]
+    original = titles[0] if titles else ""
+    excerpt = next((e for e in (plain_excerpt(m["text"], LEAD_CHARS) for m in members) if e), "")
     return ClusterView(
         id=row["id"],
-        title=title,
+        title=digest["title_vi"] if digest else original,
         original_title=original,
-        innovation=innovation,
-        impact=impact,
+        innovation=digest["innovation"] if digest else None,
+        impact=digest["impact"] if digest else None,
         importance=float(row["importance"]),
         sources=sources,
         primary_url=row["primary_url"],
@@ -100,7 +117,9 @@ def _build_view(
         summarized=digest is not None,
         last_seen=_utc(row["last_seen"]),
         labels=labels,
-        topics=match_topics(haystack, rules, sources),
+        topics=_topics_of(digest, titles, sources, rules),
+        intro=digest.get("intro") if digest else None,
+        excerpt=excerpt,
     )
 
 
@@ -112,21 +131,8 @@ _SELECT = (
 )
 
 
-def list_clusters(
-    conn: sqlite3.Connection,
-    *,
-    view: ClusterFilter = "all",
-    source: str | None = None,
-    limit: int = 30,
-    topics: tuple[str, ...] | None = None,
-    topic_rules: tuple[TopicRule, ...] = DEFAULT_RULES,
-) -> list[ClusterView]:
-    """Cụm không phải rác, điểm cao trước; lọc chưa đọc / bookmark / theo nguồn / theo chủ đề.
-
-    `topics` là các khóa chủ đề (cụm khớp một trong số đó thì giữ lại); None = không lọc.
-    Khi lọc, duyệt theo trang tới khi đủ `limit` hoặc hết `MAX_TOPIC_SCAN_ROWS` dòng.
-    """
-    sql = _SELECT
+def _filter_sql(view: ClusterFilter, source: str | None) -> tuple[str, list[object]]:
+    sql = ""
     params: list[object] = []
     if view == "unread":
         sql += " AND u.read_at IS NULL"
@@ -138,27 +144,91 @@ def list_clusters(
             "WHERE ci.cluster_id = c.id AND r.source = ?)"
         )
         params.append(source)
-    sql += " ORDER BY c.importance DESC, c.last_seen DESC, c.id DESC LIMIT ? OFFSET ?"
-    if topics is None:
-        rows = conn.execute(sql, [*params, limit, 0]).fetchall()
-        return [_build_view(conn, row, topic_rules) for row in rows]
+    return sql, params
+
+
+_ORDER = " ORDER BY c.importance DESC, c.last_seen DESC, c.id DESC"
+_TOPIC_SELECT = (  # đủ để khớp chủ đề: tóm tắt, tiêu đề và nguồn của mọi bài trong cụm
+    "SELECT c.id, c.digest, "
+    "(SELECT group_concat(r.title, char(10)) FROM cluster_items ci "
+    "JOIN raw_items r ON r.id = ci.item_id WHERE ci.cluster_id = c.id) AS titles, "
+    "(SELECT group_concat(DISTINCT r.source) FROM cluster_items ci "
+    "JOIN raw_items r ON r.id = ci.item_id WHERE ci.cluster_id = c.id) AS srcs "
+    "FROM clusters c LEFT JOIN user_state u ON u.cluster_id = c.id WHERE c.is_noise = 0"
+)
+_COUNT = (
+    "SELECT COUNT(*) FROM clusters c LEFT JOIN user_state u ON u.cluster_id = c.id "
+    "WHERE c.is_noise = 0"
+)
+
+
+def _topic_ids(
+    conn: sqlite3.Connection,
+    where: str,
+    params: list[object],
+    topics: tuple[str, ...],
+    rules: tuple[TopicRule, ...],
+) -> list[int]:
+    """Id các cụm khớp chủ đề, theo thứ tự hiển thị, trong `MAX_TOPIC_SCAN_ROWS` cụm đầu."""
+    rows = conn.execute(
+        _TOPIC_SELECT + where + _ORDER + " LIMIT ?",
+        [*params, MAX_TOPIC_SCAN_ROWS],
+    ).fetchall()
     wanted = set(topics)
-    page = max(limit, 50)
-    found: list[ClusterView] = []
-    scanned = 0
-    while len(found) < limit and scanned < MAX_TOPIC_SCAN_ROWS:
-        size = min(page, MAX_TOPIC_SCAN_ROWS - scanned)
-        rows = conn.execute(sql, [*params, size, scanned]).fetchall()
-        for row in rows:
-            cluster = _build_view(conn, row, topic_rules)
-            if wanted.intersection(cluster.topics):
-                found.append(cluster)
-                if len(found) == limit:
-                    break
-        scanned += size
-        if len(rows) < size:
-            break
+    found: list[int] = []
+    for row in rows:
+        digest = json.loads(row["digest"]) if row["digest"] else None
+        titles = (row["titles"] or "").split("\n")
+        sources = tuple((row["srcs"] or "").split(","))
+        if wanted.intersection(_topics_of(digest, titles, sources, rules)):
+            found.append(int(row["id"]))
     return found
+
+
+def list_clusters(
+    conn: sqlite3.Connection,
+    *,
+    view: ClusterFilter = "all",
+    source: str | None = None,
+    limit: int = 30,
+    offset: int = 0,
+    topics: tuple[str, ...] | None = None,
+    topic_rules: tuple[TopicRule, ...] = DEFAULT_RULES,
+) -> list[ClusterView]:
+    """Cụm không phải rác, điểm cao trước; lọc chưa đọc / bookmark / theo nguồn / theo chủ đề.
+
+    `topics` là các khóa chủ đề (cụm khớp một trong số đó thì giữ lại); None = không lọc.
+    Khi lọc chủ đề, chỉ xét `MAX_TOPIC_SCAN_ROWS` cụm đầu. `offset` để phân trang.
+    """
+    where, params = _filter_sql(view, source)
+    if topics is None:
+        rows = conn.execute(
+            _SELECT + where + _ORDER + " LIMIT ? OFFSET ?", [*params, limit, offset]
+        ).fetchall()
+        return [_build_view(conn, row, topic_rules) for row in rows]
+    page = _topic_ids(conn, where, params, topics, topic_rules)[offset : offset + limit]
+    if not page:
+        return []
+    marks = ",".join("?" * len(page))
+    rows = conn.execute(_SELECT + f" AND c.id IN ({marks})", page).fetchall()
+    by_id = {int(row["id"]): row for row in rows}
+    return [_build_view(conn, by_id[cid], topic_rules) for cid in page if cid in by_id]
+
+
+def count_clusters(
+    conn: sqlite3.Connection,
+    *,
+    view: ClusterFilter = "all",
+    source: str | None = None,
+    topics: tuple[str, ...] | None = None,
+    topic_rules: tuple[TopicRule, ...] = DEFAULT_RULES,
+) -> int:
+    """Số cụm khớp bộ lọc (để tính số trang); cùng quy tắc với `list_clusters`."""
+    where, params = _filter_sql(view, source)
+    if topics is not None:
+        return len(_topic_ids(conn, where, params, topics, topic_rules))
+    row = conn.execute(_COUNT + where, params).fetchone()
+    return int(row[0])
 
 
 def get_cluster(conn: sqlite3.Connection, cluster_id: int) -> ClusterView | None:
@@ -204,15 +274,25 @@ def last_error(conn: sqlite3.Connection, source: str) -> str | None:
 
 
 EXCERPT_CHARS = 300
+LEAD_CHARS = 280  # đoạn mở đầu dưới tiêu đề khi chưa có giới thiệu của LLM
 _TAG = re.compile(r"<[^>]*>")
+_SENTENCE_END = re.compile(r"[.!?](?=\s)")
 
 
 def plain_excerpt(text: str | None, limit: int = EXCERPT_CHARS) -> str:
-    """Bỏ thẻ HTML, giải mã ký tự đặc biệt, gộp khoảng trắng và cắt tối đa `limit` ký tự."""
+    """Bỏ thẻ HTML, giải mã ký tự đặc biệt, gộp khoảng trắng và cắt tối đa `limit` ký tự.
+
+    Cắt ở cuối câu nếu câu đó qua nửa `limit`; không thì cắt ở ranh giới từ và thêm "…".
+    """
     clean = " ".join(html.unescape(_TAG.sub(" ", text or "")).split())
     if len(clean) <= limit:
         return clean
-    return clean[:limit].rstrip() + "…"
+    head = clean[: limit + 1]
+    ends = [m.end() for m in _SENTENCE_END.finditer(head)]
+    if ends and ends[-1] > limit // 2:
+        return head[: ends[-1]]
+    cut = head.rfind(" ", 0, limit)
+    return clean[: cut if cut > limit // 2 else limit].rstrip() + "…"
 
 
 @dataclass(frozen=True)

@@ -8,8 +8,8 @@ from app.storage import ui_queries
 from app.storage.ui_queries import ClusterFilter, ClusterView, SourceStatusView
 
 ALL_SOURCES = "Mọi nguồn"
-MY_TOPICS = "Chủ đề của tôi"
-ALL_TOPICS = "Tất cả chủ đề"
+MY_TOPICS = "★ Của tôi"
+ALL_TOPICS = "Mọi chủ đề"
 FILTER_LABELS: dict[str, ClusterFilter] = {
     "Tất cả": "all",
     "Chưa đọc": "unread",
@@ -22,7 +22,9 @@ class UIModel:
     """Trạng thái bộ lọc và dữ liệu của widget; không phụ thuộc Tk nên test được."""
 
     reader: sqlite3.Connection
-    limit: int = 30
+    limit: int = 30  # tổng số tin tối đa (mọi trang cộng lại)
+    page_size: int = 6
+    page: int = 0  # bắt đầu từ 0
     view: ClusterFilter = "all"
     source: str | None = None
     expanded: set[int] = field(default_factory=set)
@@ -32,17 +34,20 @@ class UIModel:
 
     def set_filter_label(self, label: str) -> None:
         self.view = FILTER_LABELS.get(label, "all")
+        self.page = 0
 
     def set_source_label(self, label: str) -> None:
         self.source = None if label == ALL_SOURCES else label
+        self.page = 0
 
     def topic_choices(self) -> list[str]:
         labels = [r.label for r in self.rules if r.key in self.enabled_topics]
         return [MY_TOPICS, ALL_TOPICS, *labels]
 
     def set_topic_label(self, label: str) -> None:
-        """Nhãn lạ (ví dụ chủ đề đã bị tắt trong cài đặt) quay về "Chủ đề của tôi"."""
+        """Nhãn lạ (ví dụ chủ đề đã bị tắt trong cài đặt) quay về "★ Của tôi"."""
         self.topic = label if label in self.topic_choices() else MY_TOPICS
+        self.page = 0
 
     def topic_keys(self) -> tuple[str, ...] | None:
         """Khóa chủ đề dùng để lọc; None = không lọc."""
@@ -52,12 +57,41 @@ class UIModel:
             return self.enabled_topics or None
         return tuple(r.key for r in self.rules if r.label == self.topic) or None
 
+    def total(self) -> int:
+        count = ui_queries.count_clusters(
+            self.reader,
+            view=self.view,
+            source=self.source,
+            topics=self.topic_keys(),
+            topic_rules=self.rules,
+        )
+        return min(count, self.limit)
+
+    def page_count(self) -> int:
+        return max(1, -(-self.total() // self.page_size))
+
+    def next_page(self) -> bool:
+        if self.page + 1 >= self.page_count():
+            return False
+        self.page += 1
+        return True
+
+    def prev_page(self) -> bool:
+        if self.page == 0:
+            return False
+        self.page -= 1
+        return True
+
     def clusters(self) -> list[ClusterView]:
+        """Tin của trang hiện tại; trang vượt quá (vừa đọc hết trang cuối) lùi về trang cuối."""
+        self.page = min(self.page, self.page_count() - 1)
+        offset = self.page * self.page_size
         return ui_queries.list_clusters(
             self.reader,
             view=self.view,
             source=self.source,
-            limit=self.limit,
+            limit=max(0, min(self.page_size, self.limit - offset)),
+            offset=offset,
             topics=self.topic_keys(),
             topic_rules=self.rules,
         )

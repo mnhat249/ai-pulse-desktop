@@ -44,7 +44,8 @@ def set_secret(name: str, value: str) -> None:
 
 class GitHubSettings(BaseModel):
     enabled: bool = True
-    topics: list[str] = ["llm", "ai-agent", "computer-vision", "mcp", "rag"]
+    # mỗi chủ đề tốn 2 truy vấn search; không token chỉ được 10 truy vấn/phút
+    topics: list[str] = ["llm", "ai-agent", "claude-code", "mcp", "rag"]
     interval_minutes: int = Field(30, ge=1)
     pushed_within_hours: int = 48
     created_within_days: int = 7
@@ -188,6 +189,7 @@ class UISettings(BaseModel):
     toast_max_per_hour: int = 4
     always_on_top: bool = True
     max_clusters_shown: int = 30
+    page_size: int = Field(6, ge=1, le=30)  # số tin mỗi trang của widget
     process_interval_minutes: int = Field(5, ge=1)
 
 
@@ -199,7 +201,7 @@ class TopicOverride(BaseModel):
 
 
 class TopicSettings(BaseModel):
-    enabled: list[str] = list(DEFAULT_KEYS)  # "Chủ đề của tôi" = hợp các chủ đề này
+    enabled: list[str] = list(DEFAULT_KEYS)  # "★ Của tôi" = hợp các chủ đề này
     rules: dict[str, TopicOverride] = {}
 
     def resolved_rules(self) -> tuple[TopicRule, ...]:

@@ -14,6 +14,7 @@ datas = [
     # Alembic nạp env.py và các file migration theo đường dẫn nên phải có dạng file, không phải module
     (str(ROOT / "app" / "storage" / "migrations"), "app/storage/migrations"),
     (str(ROOT / "app" / "pipeline" / "prompts"), "app/pipeline/prompts"),
+    (str(ROOT / "app" / "glossary" / "terms_vi.toml"), "app/glossary"),
 ]
 binaries = []
 hiddenimports = [

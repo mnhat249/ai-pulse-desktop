@@ -489,8 +489,8 @@ def test_unsummarized_card_shows_hint_excerpt_and_sources(
         widget.toggle_card(cid)
         texts = card_texts_of(widget._cards[cid])
         assert any("python -m app.setkey gemini" in t for t in texts)
-        assert "Nội dung gốc" in texts and "Nguồn" in texts
-        assert "Rust 2.0 ra mắt x & hơn" in texts
+        assert "Nguồn" in texts and "Rust 2.0 ra mắt x & hơn" in texts
+        assert "Nội dung gốc" not in texts  # đoạn mở đầu dưới tiêu đề đã là nội dung gốc
         assert any(t.endswith("· Rust 2.0 released") for t in texts)
         assert any(t.endswith("· rust-lang/rust") for t in texts)
         widget.open_url(widget._views[cid], "https://gh/r")

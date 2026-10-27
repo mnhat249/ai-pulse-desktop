@@ -4,7 +4,6 @@ App Windows chạy ngầm, tự gom tin AI từ nhiều nguồn, lọc trùng, l
 
 - Kế hoạch và tiến độ: [`docs/PLAN.md`](docs/PLAN.md)
 - Bàn giao, việc còn lại: [`HANDOFF.md`](HANDOFF.md)
-- Quy trình làm việc: [`docs/WORKFLOW.md`](docs/WORKFLOW.md)
 - Sổ ghi chép khi dùng thật: [`docs/feedback.md`](docs/feedback.md), [`docs/x-missed.md`](docs/x-missed.md)
 
 ## Cài đặt
@@ -35,6 +34,11 @@ python -m app.main            # widget nổi + icon khay + toast, chạy ngầm
 Lần chạy đầu tải model embedding (khoảng 500 MB) về thư mục dữ liệu để lọc trùng theo nghĩa; không có model thì app vẫn lọc trùng theo link, repo, mã paper.
 
 Bấm X trên widget chỉ ẩn vào khay; chuột phải icon khay để "Chạy ngay", "Tạm dừng" hoặc "Thoát". Mở lần hai sẽ đưa widget đang chạy lên thay vì chạy bản thứ hai.
+
+Đọc tin:
+- Tab **Tin tức**: mỗi trang 6 tin (`[ui] page_size`, tối đa `max_clusters_shown` tin), nút "‹ Trước / Sau ›". Mỗi thẻ có tiêu đề đầy đủ, tiêu đề gốc, đoạn giới thiệu (do LLM viết; tin cũ hoặc chưa tóm tắt thì là đoạn đầu bài gốc), chip nguồn, chip chủ đề và chip thuật ngữ. Bấm thẻ để xem "Cái mới", "Dùng để" và từng bài nguồn.
+- Hàng chủ đề: "★ Của tôi" (hợp các chủ đề trong `[topics] enabled`), "Mọi chủ đề", "Model mới", "Dùng Claude" (skill, plugin, subagent, MCP, CLAUDE.md...), "Ảnh/video AI". Từ khóa sửa được trong `[topics.rules.<khóa>]`.
+- Tab **Thuật ngữ**: hơn 100 từ viết tắt AI/CS (RAG, MoE, LoRA, MCP...) giải thích bằng tiếng Việt, tìm được không cần gõ dấu. Bấm chip thuật ngữ trên thẻ tin để mở đúng mục đó. Dữ liệu ở `app/glossary/terms_vi.toml`.
 
 Dòng lệnh, không giao diện:
 ```bash
@@ -88,4 +92,6 @@ Không cần sửa `pipeline/` hay `ui/`; một test tự động (`test_pipelin
 python scripts/check.py        # format, lint, mypy, pytest, quét khóa (như trước khi commit)
 python scripts/build_exe.py    # đóng gói dist/NeuralRadar/NeuralRadar.exe (PyInstaller, dạng thư mục)
 ```
+MCP GitHub (`.mcp.json`, chế độ chỉ đọc) cần biến `GITHUB_TOKEN` có quyền đọc.
+
 Chạy bằng Python trong `.venv`. Đóng gói chưa được thử trên máy Windows sạch (nên thử bằng Windows Sandbox).

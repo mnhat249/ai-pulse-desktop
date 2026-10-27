@@ -51,6 +51,7 @@ def main() -> int:
         UIModel(
             reader,
             settings.ui.max_clusters_shown,
+            settings.ui.page_size,
             rules=settings.topics.resolved_rules(),
             enabled_topics=settings.topics.enabled_keys(),
         ),

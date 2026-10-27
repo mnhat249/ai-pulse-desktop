@@ -19,7 +19,7 @@ Chú giải: `[x]` xong và đã kiểm (test/chạy thật) · `[~]` code đã 
 | 4. Thêm nguồn | Xong code | Đạt (bằng test) | RSS (AINews, HF blog, OpenAI, DeepMind, Google AI) và Bluesky; thêm nguồn không phải sửa `pipeline/` hay `ui/` (có test giữ điều này). Reddit bỏ vì chưa có đơn duyệt; sổ `x-missed.md` cần bạn ghi 2 tuần |
 | 5. Hoàn thiện | Xong code | Chưa đạt | Đóng gói `.exe`, shortcut Startup, dọn dữ liệu + sao lưu + VACUUM, màn hình cài đặt, README. Chưa thử cài và chạy trên máy Windows sạch *(cần bạn; thử bằng Windows Sandbox)* |
 
-Code của cả 6 giai đoạn đã xong; `python scripts/check.py` xanh với 400 test. Giai đoạn 0–3 vào `main` qua PR #1, giai đoạn 4–5 qua PR #2. Các bản sửa sau đó (thang độ nóng, adapter bỏ phần tử hỏng, CI, khóa phiên bản, cửa sổ Cài đặt) nằm trên nhánh `feat/phase-4-5`, chờ PR #3.
+Code của cả 6 giai đoạn đã xong; `python scripts/check.py` xanh. Sau MVP: lọc theo chủ đề, thẻ tin dễ đọc (tiêu đề đầy đủ, đoạn giới thiệu, 6 bài mỗi trang) và tab Thuật ngữ nằm trên nhánh `feat/reader-ux`. Giai đoạn 0–3 vào `main` qua PR #1, giai đoạn 4–5 qua PR #2. Các bản sửa sau đó (thang độ nóng, adapter bỏ phần tử hỏng, CI, khóa phiên bản, cửa sổ Cài đặt) nằm trên nhánh `feat/phase-4-5`, chờ PR #3.
 
 Đang làm, mỗi việc một nhánh riêng: lệnh `app.cli metrics` / `doctor` + test `serve` (`feat/metrics-doctor`), nhớ trạng thái tạm ngưng nguồn qua lần khởi động lại (`worktree-restore-source-state`), quota LLM theo múi giờ (`feat/quota-timezone`), widget làm mới từng phần (`feat/widget-card-refresh`).
 
@@ -247,7 +247,7 @@ Kết quả: lấy tin thật từ 3 nguồn ổn định nhất, chạy ngầm 
 
 ### Từng nguồn
 
-- [x] **GitHub:** tìm repo theo 5 topic (`llm`, `ai-agent`, `computer-vision`, `mcp`, `rag`) có push trong 48 giờ, cộng repo mới tạo trong 7 ngày, sắp theo sao. Dùng `ETag` để lần gọi không đổi trả 304, không tốn quota
+- [x] **GitHub:** tìm repo theo 5 topic (`llm`, `ai-agent`, `claude-code`, `mcp`, `rag`; `claude-code` thay `computer-vision` từ `feat/reader-ux`) có push trong 48 giờ, cộng repo mới tạo trong 7 ngày, sắp theo sao. Dùng `ETag` để lần gọi không đổi trả 304, không tốn quota
 - [x] **GitHub:** lưu snapshot số sao mỗi lần quét; tính tốc độ sao/24h; repo chưa đủ 24h thì dùng sao chia tuổi repo
 - [x] **HuggingFace:** `/api/daily_papers` và `/api/models?sort=trendingScore&direction=-1&limit=50`; lưu snapshot `trendingScore`
 - [x] **Hacker News:** Algolia HN Search API, chỉ lấy story, lọc theo từ khóa AI và điểm tối thiểu (ví dụ từ 50 điểm)
