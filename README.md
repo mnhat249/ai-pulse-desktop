@@ -16,6 +16,8 @@ python -m venv .venv
 pip install -e ".[dev]"
 ```
 
+Muốn đúng phiên bản thư viện đã kiểm (như CI và bản đóng gói): `pip install -r requirements-dev.lock` rồi `pip install -e . --no-deps`.
+
 ## Lưu khóa API
 Khóa chỉ nằm trong Windows Credential Manager (không nằm trong file hay biến môi trường):
 

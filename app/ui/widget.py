@@ -9,7 +9,8 @@ from typing import Protocol
 import customtkinter as ctk
 
 from app.config import Settings, app_home
-from app.storage.ui_queries import ClusterView, source_label
+from app.core import sources
+from app.storage.ui_queries import ClusterView, SourceStatusView, source_label
 from app.ui import theme
 from app.ui import tray as tray_commands
 from app.ui.backend import UIEvent
@@ -458,27 +459,30 @@ class FloatingWidget(ctk.CTk):  # type: ignore[misc]
         """Màn hình "tình trạng nguồn": lần chạy cuối và lỗi gần nhất của từng nguồn."""
         window = ctk.CTkToplevel(self, fg_color=theme.BG)
         window.title("Tình trạng nguồn")
-        window.geometry("420x320")
+        window.geometry("440x460")
         window.attributes("-topmost", True)
+        body = ctk.CTkScrollableFrame(window, fg_color=theme.BG)
+        body.pack(fill="both", expand=True)
         statuses = self._model.statuses()
         if not statuses:
             ctk.CTkLabel(
-                window,
+                body,
                 text="Chưa có lần quét nào. Bấm Chạy ngay để quét.",
                 font=self._fonts["body"],
                 text_color=theme.MUTED,
             ).pack(pady=20)
         for status in statuses:
             frame = ctk.CTkFrame(
-                window,
+                body,
                 fg_color=theme.CARD,
                 corner_radius=CARD_RADIUS,
                 border_width=1,
                 border_color=theme.BORDER,
             )
-            frame.pack(fill="x", padx=10, pady=4)
+            frame.pack(fill="x", padx=6, pady=4)
             mark = "✓" if status.ok else "✗"
-            line = f"{mark} {status.source} — {theme.relative_time(status.last_run)}"
+            name = sources.display_name(status.source)
+            line = f"{mark} {name} — {theme.relative_time(status.last_run)}"
             ctk.CTkLabel(
                 frame,
                 text=f"{line} — {status.item_count} bài",
@@ -486,19 +490,31 @@ class FloatingWidget(ctk.CTk):  # type: ignore[misc]
                 font=self._fonts["card_title"],
                 text_color=theme.INK if status.ok else theme.ERROR,
             ).pack(fill="x", padx=10, pady=(8, 0))
-            error = status.error if not status.ok else self._model.last_error(status.source)
-            if error:
+            notes = self._status_notes(status)
+            for index, (text, color) in enumerate(notes):
                 ctk.CTkLabel(
                     frame,
-                    text=f"Lỗi gần nhất: {error}",
-                    text_color=theme.ERROR if not status.ok else theme.MUTED,
+                    text=text,
+                    text_color=color,
                     font=self._fonts["small"],
                     wraplength=380,
                     anchor="w",
                     justify="left",
-                ).pack(fill="x", padx=10, pady=(0, 8))
-            else:
+                ).pack(fill="x", padx=10, pady=(0, 8 if index == len(notes) - 1 else 2))
+            if not notes:
                 ctk.CTkFrame(frame, height=6, fg_color="transparent").pack()
+
+    def _status_notes(self, status: SourceStatusView) -> list[tuple[str, str]]:
+        """Lần quét thành công vẫn có thể chỉ lấy được một phần (phần tử hỏng, hết quota)."""
+        if not status.ok:
+            return [(f"Lỗi gần nhất: {status.error}", theme.ERROR)] if status.error else []
+        notes: list[tuple[str, str]] = []
+        if status.error:  # scheduler ghi "một phần: ..." cho lần chạy ok
+            notes.append((f"⚠ Lần quét cuối chỉ lấy được {status.error}", theme.INK))
+        last = self._model.last_error(status.source)
+        if last:
+            notes.append((f"Lỗi gần nhất: {last}", theme.MUTED))
+        return notes
 
     # ---- lưu trạng thái và thoát ----------------------------------------------------------
     def _on_configure(self, event: object) -> None:

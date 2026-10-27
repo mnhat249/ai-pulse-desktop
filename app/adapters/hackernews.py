@@ -14,7 +14,9 @@ from app.core.sources import SourceInfo, register
 SEARCH_URL = "https://hn.algolia.com/api/v1/search_by_date"
 ITEM_URL = "https://news.ycombinator.com/item?id={}"
 
-register(SourceInfo("hackernews", "HN", "#B5481B", rank=3, heat_metric="points"))
+register(
+    SourceInfo("hackernews", "HN", "#B5481B", rank=3, heat_metric="points", title="Hacker News")
+)
 
 
 def keyword_pattern(keywords: list[str]) -> re.Pattern[str]:
@@ -79,6 +81,6 @@ class HackerNewsAdapter:
         found = await collect(self.name, self._settings.keywords, search, self.warnings)
         hits: dict[str, dict[str, Any]] = {}
         for hit in found:
-            if self._pattern.search(hit.get("title") or ""):
+            if isinstance(hit, dict) and self._pattern.search(hit.get("title") or ""):
                 hits.setdefault(str(hit.get("objectID")), hit)
-        return parse_items(self.name, hits.values(), build_story)
+        return parse_items(self.name, hits.values(), build_story, self.warnings)

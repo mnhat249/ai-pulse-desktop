@@ -40,9 +40,12 @@ class SettingsWindow(ctk.CTkToplevel):  # type: ignore[misc]
         self._path = settings_path
         self._fonts = fonts
         self._apply_startup = apply_startup
-        self._startup_result: list[bool] = []
+        # trạng thái shortcut dùng chung với luồng PowerShell, đọc/ghi dưới `_startup_lock`
+        self._startup_lock = threading.Lock()
+        self._startup_failures: list[bool] = []
         self._applied_startup = settings.start_with_windows  # trạng thái shortcut đã áp dụng thật
-        self._startup_target = settings.start_with_windows
+        self._startup_busy = False
+        self._startup_pending: bool | None = None  # lần lưu trong lúc PowerShell còn chạy
         self.title("Cài đặt")
         self.geometry("420x640")
         self.attributes("-topmost", True)
@@ -106,11 +109,11 @@ class SettingsWindow(ctk.CTkToplevel):  # type: ignore[misc]
                 text_color=theme.MUTED,
                 anchor="w",
             ).pack(fill="x", padx=12, pady=(8, 0))
-            for key in feeds:
+            for index, key in enumerate(feeds):
+                last = index == len(feeds) - 1
                 self._switch(sources, key.removeprefix("rss:"), self._enabled[key]).pack(
-                    anchor="w", padx=10, pady=3
+                    anchor="w", padx=10, pady=(3, 10 if last else 3)
                 )
-        ctk.CTkFrame(sources, height=6, fg_color="transparent").pack()
 
         toasts = self._section("Thông báo")
         for text, var in (
@@ -182,31 +185,49 @@ class SettingsWindow(ctk.CTkToplevel):  # type: ignore[misc]
             )
             return False
         self._message.configure(text="Đã lưu. Mở lại NeuralRadar để áp dụng.", text_color=theme.INK)
-        if draft.start_with_windows != self._applied_startup:
-            self._apply_startup_in_background(draft.start_with_windows)
+        self._request_startup(draft.start_with_windows)
         return True
 
-    def _apply_startup_in_background(self, enabled: bool) -> None:
+    def _request_startup(self, enabled: bool) -> None:
         """PowerShell mất khoảng một giây: chạy ở luồng riêng, giao diện chỉ hỏi kết quả."""
-
-        self._startup_target = enabled
-
-        def work() -> None:
-            self._startup_result.append(self._apply_startup(enabled))
-
-        threading.Thread(target=work, name="startup-shortcut", daemon=True).start()
+        with self._startup_lock:
+            if self._startup_busy:  # mỗi lúc chỉ một luồng; luồng đó tự áp dụng giá trị mới nhất
+                self._startup_pending = enabled
+                return
+            if enabled == self._applied_startup:
+                return
+            self._startup_busy = True
+        threading.Thread(
+            target=self._startup_worker, args=(enabled,), name="startup-shortcut", daemon=True
+        ).start()
         self.after(POLL_MS, self._poll_startup)
+
+    def _startup_worker(self, enabled: bool) -> None:
+        """Áp dụng tới khi hết lần lưu đang chờ, kể cả khi cửa sổ đã đóng giữa chừng."""
+        while True:
+            ok = self._apply_startup(enabled)
+            with self._startup_lock:
+                if ok:
+                    self._applied_startup = enabled  # lần lưu sau so với trạng thái mới này
+                else:
+                    self._startup_failures.append(enabled)
+                pending, self._startup_pending = self._startup_pending, None
+                if pending is None or pending == self._applied_startup:
+                    self._startup_busy = False
+                    return
+            enabled = pending
 
     def _poll_startup(self) -> None:
         if not self.winfo_exists():  # cửa sổ đã đóng trong lúc chờ
             return
-        if not self._startup_result:
-            self.after(POLL_MS, self._poll_startup)
-            return
-        if self._startup_result.pop():
-            self._applied_startup = self._startup_target  # lần lưu sau so với trạng thái mới này
-        else:
+        with self._startup_lock:
+            busy = self._startup_busy
+            failed = bool(self._startup_failures)
+            self._startup_failures.clear()
+        if failed:
             self._message.configure(
                 text="Đã lưu, nhưng không tạo/xóa được shortcut khởi động cùng Windows.",
                 text_color=theme.ERROR,
             )
+        if busy:
+            self.after(POLL_MS, self._poll_startup)

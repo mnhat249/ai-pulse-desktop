@@ -264,3 +264,65 @@ async def test_radar_schedules_a_daily_maintenance_job(engine: AsyncEngine) -> N
     assert job is not None and job.trigger.interval == timedelta(hours=24)  # type: ignore[attr-defined]
     await radar.stop()
     await writer.stop()
+
+
+async def test_prune_snapshots_drops_old_but_keeps_the_newest_per_metric(
+    engine: AsyncEngine,
+) -> None:
+    writer = Writer(engine)
+    writer.start()
+    ids = await seed(engine, writer)
+    async with engine.connect() as conn:
+        item_id = (
+            await conn.execute(
+                select(cluster_items.c.item_id).where(cluster_items.c.cluster_id == ids["new"])
+            )
+        ).scalar_one()
+
+    async def add(conn) -> None:  # type: ignore[no-untyped-def]
+        for days_ago, value in ((20, 1.0), (10, 2.0), (1, 3.0)):
+            await conn.execute(
+                metric_snapshots.insert().values(
+                    item_id=item_id,
+                    metric="stars",
+                    value=value,
+                    captured_at=NOW - timedelta(days=days_ago),
+                )
+            )
+
+    await writer.submit(add)
+    await writer.submit(lambda c: purge_old(c, 30, NOW))
+    await writer.stop()
+    async with engine.connect() as conn:
+        values = sorted(
+            r[0]
+            for r in (
+                await conn.execute(
+                    select(metric_snapshots.c.value).where(metric_snapshots.c.item_id == item_id)
+                )
+            ).all()
+        )
+    assert values == [3.0, 5.0]
+
+
+async def test_prune_snapshots_keeps_the_only_snapshot_even_when_old(engine: AsyncEngine) -> None:
+    writer = Writer(engine)
+    writer.start()
+    ids = await seed(engine, writer)
+    async with engine.connect() as conn:
+        item_id = (
+            await conn.execute(
+                select(cluster_items.c.item_id).where(cluster_items.c.cluster_id == ids["marked"])
+            )
+        ).scalar_one()
+    await writer.submit(lambda c: purge_old(c, 30, NOW))
+    await writer.stop()
+    async with engine.connect() as conn:
+        left = (
+            await conn.execute(
+                select(func.count())
+                .select_from(metric_snapshots)
+                .where(metric_snapshots.c.item_id == item_id)
+            )
+        ).scalar_one()
+    assert left == 1  # cụm bookmark 45 ngày tuổi: snapshot duy nhất không bị xóa

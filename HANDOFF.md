@@ -4,10 +4,11 @@
 Thực hiện `docs/PLAN.md`. Toàn bộ phần code của 6 giai đoạn (0–5) đã xong; còn các cổng cần dữ liệu thật, thời gian dùng thật và máy Windows sạch. Bảng "Tiến độ" đầu `docs/PLAN.md` là nguồn trạng thái chính.
 
 ## Nhánh và PR
-- `worktree-mvp` (PR #1 vào `main`): giai đoạn 0–3.
-- `feat/phase-4-5` (tách từ `worktree-mvp`): giai đoạn 4–5. Khi PR #1 được merge thì đổi base của PR mới sang `main`.
-- `.claude/` và `CLAUDE.md` nằm trong `.gitignore` (không commit), chỉ có trên máy này.
-- Hook commit của Claude chạy bản ở repo gốc nên không dùng được; commit bằng terminal của bạn, chạy `.\.venv\Scripts\python.exe scripts/check.py` trước.
+- PR #1 (`worktree-mvp`, giai đoạn 0–3) và PR #2 (`feat/phase-4-5`, giai đoạn 4–5) đã merge vào `main`. Nhánh `worktree-mvp` có thể xóa.
+- `feat/phase-4-5` có thêm 4 commit sau PR #2 (thang độ nóng, adapter bỏ phần tử hỏng, CI + `requirements-dev.lock`, sửa cửa sổ Cài đặt): chưa push, chờ PR #3.
+- Bốn nhánh làm song song được cắt từ `main` (`f9e33a4`), **chưa có** 4 commit trên: `feat/metrics-doctor`, `worktree-restore-source-state`, `feat/quota-timezone`, `feat/widget-card-refresh`. Merge PR #3 trước, rồi rebase từng nhánh lên `main` (`feat/widget-card-refresh` dễ đụng `app/ui/widget.py`, vốn đã bị sửa ở `e0dd78c`).
+- `.claude/` và `CLAUDE.md` nằm trong `.gitignore` (không commit), chỉ có trên máy này. Thư mục gốc đã khớp `origin/main`; `.claude/worktrees/` nằm trong `.git/info/exclude` để không bị `git add` nhầm.
+- Hook commit (`.claude/hooks/pre_commit_guard.py`) chạy `scripts/check.py` của đúng worktree bằng `.venv` của nó; repo gốc đã có bản hook mới.
 
 ## Quyết định chính
 - Gói `app/`, `pyproject.toml`, SQLAlchemy 2 async + Alembic, APScheduler 3.x, tenacity, keyring, fastembed, google-genai/groq, customtkinter + pystray + winotify, feedparser, tomli-w, PyInstaller (dev).
@@ -33,6 +34,15 @@ Thực hiện `docs/PLAN.md`. Toàn bộ phần code của 6 giai đoạn (0–5
 - Feed RSS trùng tên (sau khi slug) hoặc URL không phải http/https bị bỏ và ghi log; `settings.toml` hỏng khi khởi động được đổi tên `.bad` và dùng mặc định.
 - Ghi embedding bù lỗi không làm hỏng vòng xử lý; nháy đơn cong trong PowerShell được nhân đôi; `maintenance.json` ghi nguyên tử; bảo trì chạy sau 2 phút; ngày RSS ở tương lai bị kẹp về hiện tại.
 
+## Đã sửa ở lượt review lại GĐ4-5
+- GitHub/HF/HN: phần tử hỏng bị bỏ và ghi vào `warnings` (như RSS/Bluesky), chỉ khi mọi phần tử đều hỏng mới ném `SourceError`.
+- `metric_snapshots` được dọn cùng bảo trì: bỏ snapshot cũ hơn 7 ngày, luôn giữ snapshot mới nhất của mỗi chỉ số.
+
+## Đã sửa sau lượt kiểm tra trên dữ liệu thật
+- Thang độ nóng mặc định khớp phân bố thật (GitHub 500, HF paper 100): trước đó 41/495 cụm cùng điểm 57,1.
+- Màn hình Tình trạng nguồn: tên dễ đọc (`sources.display_name`), cuộn được; cửa sổ Cài đặt hết dải trắng thừa.
+- Chưa có khóa LLM thì mọi cụm "Chờ tóm tắt" và xếp hạng chỉ dựa vào độ nóng/số nguồn: cần `python -m app.setkey gemini`.
+
 ## Chưa xong (cần người thật)
 - Cổng GĐ1: chạy `python -m app.main` liên tục 24 giờ, rút mạng thử.
 - Cổng GĐ2: gán nhãn 150–200 cặp (`python -m app.cli export-pairs`) rồi `python -m app.quality.dedup pairs.csv` để chọn ngưỡng; gán nhãn 50 tin rồi `python -m app.quality.noise`; lưu khóa Gemini/Groq (`python -m app.setkey gemini`); chạy 3 ngày không cụm lặp.
@@ -43,9 +53,11 @@ Thực hiện `docs/PLAN.md`. Toàn bộ phần code của 6 giai đoạn (0–5
 - Chưa kiểm bằng mắt: toast Windows, icon khay, màn hình "Nguồn" và "Cài đặt"; chưa thử DPI khác 125%.
 
 ## Còn tồn nhỏ
-- Một phần tử hỏng trong phản hồi GitHub/HF/HN làm hỏng cả nguồn (RSS và Bluesky thì bỏ phần tử hỏng); `serve` (signal Windows) chưa có test tự động; trạng thái tạm ngưng nguồn chỉ nằm trong RAM; `metric_snapshots` chỉ được dọn khi cụm bị xóa; quota LLM tính theo ngày UTC; widget dựng lại toàn bộ thẻ mỗi lần làm mới.
+- `serve` (signal Windows) chưa có test tự động; trạng thái tạm ngưng nguồn chỉ nằm trong RAM; quota LLM tính theo ngày UTC; widget dựng lại toàn bộ thẻ mỗi lần làm mới.
 - Anthropic chưa có RSS chính thức (404) nên chưa có trong danh sách feed mặc định.
 
 ## Bước tiếp
-1. Commit giai đoạn 4–5 (terminal của bạn), review độc lập bằng `/review-pr` ở session mới, rồi PR.
-2. Dùng thật vài ngày, ghi sổ, rồi chọn ngưỡng lọc trùng bằng dữ liệu.
+1. Push `feat/phase-4-5`, mở PR #3 vào `main` (cần bạn duyệt); review bằng `/review-pr` ở session mới.
+2. Sau khi PR #3 merge: rebase 4 nhánh làm song song lên `main`, mỗi nhánh một PR.
+3. Lưu khóa (`python -m app.setkey gemini|groq|github`), chạy `python -m app.main` 24 giờ (lần đầu tải model khoảng 500 MB), rồi đo bằng `python -m app.cli metrics` khi nhánh `feat/metrics-doctor` đã vào.
+4. Gán nhãn cặp và tin, chọn ngưỡng lọc trùng bằng F1, dùng thật 3 ngày, ghi sổ.

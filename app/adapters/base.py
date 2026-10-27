@@ -181,12 +181,31 @@ async def collect(
     return results
 
 
-def parse_items(source: str, raw: Any, build: Callable[[Any], RawItem]) -> list[RawItem]:
-    """API đổi định dạng thì ném SourceError rõ tên nguồn, các nguồn khác chạy bình thường."""
-    try:
-        return [build(entry) for entry in raw]
-    except (KeyError, TypeError, ValueError, AttributeError, IndexError) as exc:
-        raise SourceError(source, f"định dạng dữ liệu đã đổi: {exc!r}") from exc
+def parse_items(
+    source: str,
+    raw: Any,
+    build: Callable[[Any], RawItem],
+    warnings: list[str] | None = None,
+) -> list[RawItem]:
+    """Phần tử hỏng bị bỏ, gộp thành một cảnh báo mỗi lần quét; hỏng hết thì ném SourceError."""
+    items: list[RawItem] = []
+    errors: list[Exception] = []
+    entries = list(raw)
+    for entry in entries:
+        try:
+            items.append(build(entry))
+        except (KeyError, TypeError, ValueError, AttributeError, IndexError) as exc:
+            errors.append(exc)
+    if not errors:
+        return items
+    if not items:
+        raise SourceError(source, f"định dạng dữ liệu đã đổi: {errors[0]!r}") from errors[0]
+    note = f"bỏ {len(errors)}/{len(entries)} phần tử hỏng (lỗi đầu: {errors[0]!r})"
+    if warnings is not None:
+        warnings.append(note)  # scheduler ghi log và lưu vào source_runs
+    else:
+        logger.warning("Nguồn %s %s", source, note)
+    return items
 
 
 def parse_datetime(value: str) -> datetime:

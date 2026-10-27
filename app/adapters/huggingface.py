@@ -12,8 +12,21 @@ from app.core.sources import SourceInfo, register
 PAPERS_URL = "https://huggingface.co/api/daily_papers"
 MODELS_URL = "https://huggingface.co/api/models"
 
-register(SourceInfo("hf_models", "HF", "#8A5F12", rank=1, heat_metric="trendingScore"))
-register(SourceInfo("hf_papers", "HF", "#8A5F12", rank=2, heat_metric="upvotes"))
+register(
+    SourceInfo(
+        "hf_models",
+        "HF",
+        "#8A5F12",
+        rank=1,
+        heat_metric="trendingScore",
+        title="HuggingFace · model",
+    )
+)
+register(
+    SourceInfo(
+        "hf_papers", "HF", "#8A5F12", rank=2, heat_metric="upvotes", title="HuggingFace · bài báo"
+    )
+)
 
 
 def build_paper(entry: dict[str, Any]) -> RawItem:
@@ -74,9 +87,10 @@ class HFPapersAdapter:
         self.warnings: list[str] = []
 
     async def fetch(self, client: httpx.AsyncClient) -> list[RawItem]:
+        self.warnings = []
         response = await request(client, self.name, PAPERS_URL, params={"limit": self._limit})
         entries = _expect_list(self.name, parse_json(self.name, response))
-        return parse_items(self.name, entries, build_paper)
+        return parse_items(self.name, entries, build_paper, self.warnings)
 
 
 class HFModelsAdapter:
@@ -88,6 +102,7 @@ class HFModelsAdapter:
         self.warnings: list[str] = []
 
     async def fetch(self, client: httpx.AsyncClient) -> list[RawItem]:
+        self.warnings = []
         response = await request(
             client,
             self.name,
@@ -95,4 +110,4 @@ class HFModelsAdapter:
             params={"sort": "trendingScore", "direction": -1, "limit": self._limit},
         )
         models = _expect_list(self.name, parse_json(self.name, response))
-        return parse_items(self.name, models, build_model)
+        return parse_items(self.name, models, build_model, self.warnings)

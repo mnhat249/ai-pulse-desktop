@@ -3,8 +3,9 @@
 from __future__ import annotations
 
 import queue
+import time
 import tkinter
-from collections.abc import Iterator
+from collections.abc import Callable, Iterator
 from pathlib import Path
 
 import pytest
@@ -122,3 +123,13 @@ def card_texts(widget: FloatingWidget) -> list[str]:
 
     walk(widget._feed)
     return texts
+
+
+def pump_until(window: tkinter.Misc, done: Callable[[], bool], timeout: float = 5.0) -> None:
+    """Chạy vòng sự kiện Tk theo thời gian thật tới khi `done()` đúng (`after` cần chờ đủ giờ)."""
+    deadline = time.monotonic() + timeout
+    while time.monotonic() < deadline:
+        window.update()
+        if done():
+            return
+        time.sleep(0.01)

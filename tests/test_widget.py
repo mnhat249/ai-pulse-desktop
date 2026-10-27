@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+from typing import Any
+
+import customtkinter as ctk
 import pytest
 
 from app.storage.ui_queries import ClusterView
@@ -176,6 +179,23 @@ def test_window_position_and_size_are_saved_on_resize(fresh: Env) -> None:
     assert (saved.width, saved.height) == (450, 520)
 
 
+def status_window_texts(fresh: Env) -> list[str]:
+    before = set(fresh.widget.winfo_children())
+    fresh.widget.show_statuses()
+    window = (set(fresh.widget.winfo_children()) - before).pop()
+    texts: list[str] = []
+
+    def collect(parent: Any) -> None:
+        for child in parent.winfo_children():
+            if isinstance(child, ctk.CTkLabel):
+                texts.append(str(child.cget("text")))
+            collect(child)
+
+    collect(window)
+    window.destroy()
+    return texts
+
+
 def test_status_window_lists_sources_and_last_error(fresh: Env) -> None:
     import sqlite3
 
@@ -190,16 +210,27 @@ def test_status_window_lists_sources_and_last_error(fresh: Env) -> None:
     )
     conn.commit()
     conn.close()
-    before = set(fresh.widget.winfo_children())
-    fresh.widget.show_statuses()
-    window = (set(fresh.widget.winfo_children()) - before).pop()
-    texts: list[str] = []
-    for frame in window.winfo_children():
-        for label in frame.winfo_children():
-            texts.append(str(label.cget("text")))
-    window.destroy()
+    texts = status_window_texts(fresh)
     joined = " | ".join(texts)
-    assert "github" in joined and "9 bài" in joined and "HTTP 500" in joined
+    assert "GitHub" in joined and "9 bài" in joined and "HTTP 500" in joined
+    assert "github —" not in joined  # tên đã được làm đẹp
+    assert "chỉ lấy được" not in joined  # lần quét cuối đủ, không có cảnh báo
+
+
+def test_status_window_shows_partial_run_warning(fresh: Env) -> None:
+    import sqlite3
+
+    conn = sqlite3.connect(fresh.path.parent / "ui.db")
+    conn.execute(
+        "INSERT INTO source_runs (source, started_at, ok, item_count, error) "
+        "VALUES ('hf_models', '2026-10-23 11:00:00', 1, 3, "
+        "'một phần: bỏ 97/100 phần tử hỏng (lỗi đầu: KeyError(''id''))')"
+    )
+    conn.commit()
+    conn.close()
+    texts = status_window_texts(fresh)
+    assert any(t.startswith("✓ HuggingFace · model") for t in texts)
+    assert any("chỉ lấy được một phần: bỏ 97/100 phần tử hỏng" in t for t in texts)
 
 
 def test_paused_state_shows_message_and_updates_tray(fresh: Env) -> None:

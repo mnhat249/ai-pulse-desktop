@@ -119,12 +119,30 @@ def test_noise_thresholds_per_source(
 RANK = RankingSettings()
 
 
+def test_source_display_names_are_readable() -> None:
+    from app.core import sources
+
+    assert sources.display_name("github") == "GitHub"
+    assert sources.display_name("hf_models") == "HuggingFace · model"
+    assert sources.display_name("hf_papers") == "HuggingFace · bài báo"
+    assert sources.display_name("hackernews") == "Hacker News"
+    assert sources.display_name("rss_ainews") == "RSS · ainews"
+    assert sources.display_name("nguon-la") == "nguon-la"
+
+
+def test_default_heat_scales_do_not_saturate_on_typical_hot_items() -> None:
+    # số đo từ DB thật: p90 sao/ngày ~100, upvotes ~54, trendingScore ~400
+    assert item_heat("github", {"stars_per_24h": 100}, RANK) < 0.5
+    assert item_heat("hf_papers", {"upvotes": 54}, RANK) < 0.7
+    assert item_heat("hf_models", {"trendingScore": 400}, RANK) < 0.5
+
+
 def test_item_heat_is_scaled_per_source_and_clamped() -> None:
-    assert item_heat("github", {"stars_per_24h": 50}, RANK) == pytest.approx(0.5)
+    assert item_heat("github", {"stars_per_24h": 250}, RANK) == pytest.approx(0.5)
     assert item_heat("github", {"stars_per_24h": 9999}, RANK) == 1.0
     assert item_heat("hf_models", {"trendingScore": 500}, RANK) == pytest.approx(0.5)
     assert item_heat("hackernews", {"points": 150}, RANK) == pytest.approx(0.5)
-    assert item_heat("hf_papers", {"upvotes": 25}, RANK) == pytest.approx(0.5)
+    assert item_heat("hf_papers", {"upvotes": 50}, RANK) == pytest.approx(0.5)
     assert item_heat("hf_models", {"trendingScore": -5}, RANK) == 0.0
     assert item_heat("unknown", {"points": 1}, RANK) == 0.0
 
