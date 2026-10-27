@@ -31,6 +31,7 @@ class Digest(BaseModel):
 
     cluster_id: int
     title_vi: str
+    intro: str | None = None  # tóm tắt cũ (trước khi có trường này) không có
     innovation: str
     impact: str
     importance: int = Field(ge=1, le=5)
@@ -44,6 +45,12 @@ class Digest(BaseModel):
         if value is not None and LINK_PATTERN.search(value):
             raise ValueError("văn bản tóm tắt không được chứa link")
         return value
+
+    @field_validator("intro")
+    @classmethod
+    def drop_intro_with_link(cls, value: str | None) -> str | None:
+        """Giới thiệu chứa link thì bỏ riêng nó, khỏi mất cả bản tóm tắt (và tốn thêm quota)."""
+        return None if value is not None and LINK_PATTERN.search(value) else value
 
 
 class Cluster(BaseModel):

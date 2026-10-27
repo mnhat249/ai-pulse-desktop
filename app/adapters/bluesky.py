@@ -15,7 +15,6 @@ logger = logging.getLogger(__name__)
 
 FEED_URL = "https://public.api.bsky.app/xrpc/app.bsky.feed.getAuthorFeed"
 POST_URL = "https://bsky.app/profile/{handle}/post/{rkey}"
-TITLE_CHARS = 110
 MAX_LINKS = 3
 
 register(SourceInfo("bluesky", "Bluesky", "#1F5FA8", rank=10, heat_metric="likes"))
@@ -34,14 +33,35 @@ def post_links(post: dict[str, Any]) -> list[str]:
     return list(dict.fromkeys(links))[:MAX_LINKS]
 
 
+def text_without_links(record: dict[str, Any]) -> str:
+    """Bỏ phần chữ hiển thị của link (Bluesky rút gọn thành "domain/path...") khỏi nội dung."""
+    raw = (record.get("text") or "").encode("utf-8")
+    spans = []
+    for facet in record.get("facets") or []:
+        index = facet.get("index") or {}
+        is_link = any(
+            f.get("$type") == "app.bsky.richtext.facet#link" for f in facet.get("features") or []
+        )
+        start, end = index.get("byteStart"), index.get("byteEnd")
+        if is_link and isinstance(start, int) and isinstance(end, int) and 0 <= start < end:
+            spans.append((start, end))
+    for start, end in sorted(spans, reverse=True):
+        raw = raw[:start] + raw[end:]
+    return raw.decode("utf-8", errors="ignore")
+
+
+def _first_line(text: str) -> str:
+    """Dòng đầu có chữ, gộp khoảng trắng; bài Bluesky tối đa 300 ký tự nên không cắt."""
+    return next((" ".join(line.split()) for line in text.splitlines() if line.strip()), "")
+
+
 def build_post(post: dict[str, Any]) -> RawItem:
     record = post["record"]
     handle = post["author"]["handle"]
     text = (record.get("text") or "").strip()
     external = (post.get("embed") or {}).get("external") or {}
     extra = " ".join(p for p in (external.get("title"), external.get("description")) if p)
-    first_line = text.splitlines()[0] if text else extra
-    title = first_line if len(first_line) <= TITLE_CHARS else first_line[: TITLE_CHARS - 1] + "…"
+    title = _first_line(text_without_links(record)) or _first_line(text) or extra
     return RawItem(
         source="bluesky",
         source_id=post["uri"],

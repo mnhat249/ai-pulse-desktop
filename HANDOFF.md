@@ -7,6 +7,7 @@ Thực hiện `docs/PLAN.md`. Toàn bộ phần code của 6 giai đoạn (0–5
 - PR #1 (`worktree-mvp`, giai đoạn 0–3) và PR #2 (`feat/phase-4-5`, giai đoạn 4–5) đã merge vào `main`. Nhánh `worktree-mvp` có thể xóa.
 - `feat/phase-4-5` có thêm 4 commit sau PR #2 (thang độ nóng, adapter bỏ phần tử hỏng, CI + `requirements-dev.lock`, sửa cửa sổ Cài đặt): chưa push, chờ PR #3.
 - Bốn nhánh làm song song được cắt từ `main` (`f9e33a4`), **chưa có** 4 commit trên: `feat/metrics-doctor`, `worktree-restore-source-state`, `feat/quota-timezone`, `feat/widget-card-refresh`. Merge PR #3 trước, rồi rebase từng nhánh lên `main` (`feat/widget-card-refresh` dễ đụng `app/ui/widget.py`, vốn đã bị sửa ở `e0dd78c`).
+- `feat/reader-ux` (cắt từ `test/ui-fixes` = `feat/phase-4-5` + `feat/widget-card-refresh` + `claude/topic-filter-ad99c2` + `claude/card-ux-21b66f`): tiêu đề to và đầy đủ, 6 bài mỗi trang, đoạn giới thiệu, chip chủ đề, tab Thuật ngữ.
 - `.claude/` và `CLAUDE.md` nằm trong `.gitignore` (không commit), chỉ có trên máy này. Thư mục gốc đã khớp `origin/main`; `.claude/worktrees/` nằm trong `.git/info/exclude` để không bị `git add` nhầm.
 - Hook commit (`.claude/hooks/pre_commit_guard.py`) chạy `scripts/check.py` của đúng worktree bằng `.venv` của nó; repo gốc đã có bản hook mới.
 
@@ -22,11 +23,7 @@ Thực hiện `docs/PLAN.md`. Toàn bộ phần code của 6 giai đoạn (0–5
 - Cài đặt từ giao diện ghi `settings.toml` rồi áp dụng khi mở lại app; tạo/xóa shortcut Startup chạy ở luồng riêng (PowerShell).
 
 ## Đã xong
-- Giai đoạn 0–3: xem `docs/PLAN.md` (đã qua hai lượt review độc lập, đã sửa).
-- Giai đoạn 4: `app/adapters/{rss,bluesky}.py`, registry nguồn, bật/tắt nguồn, fixture thật, sổ `docs/x-missed.md`.
-- Giai đoạn 5: `app/maintenance.py` (xóa cụm cũ trừ bookmark, sao lưu hằng tuần giữ 7 bản, VACUUM), `app/startup.py`, `app/settings_store.py`, `app/ui/settings_{form,window}.py`, `scripts/build_exe.py` + `packaging/`, README mới, `docs/feedback.md`.
-- Việc lặt vặt: chống chạy trùng một nguồn khi bấm "Chạy ngay" liên tiếp; bù embedding cho bài đã gom trước khi có model.
-- `scripts/check.py` xanh (ruff, mypy, 390 test). `NeuralRadar.exe` chạy được ở thư mục dữ liệu tạm (migration, prompt, scheduler, RSS, Bluesky, vòng xử lý).
+Xem bảng "Tiến độ" đầu `docs/PLAN.md` (nguồn trạng thái chính) và `git log`.
 
 ## Đã sửa theo review độc lập GĐ4-5
 - Bài đã dọn không bị nạp lại thành "tin mới": bảng `seen_items` (migration 0003) giữ dấu vết (nguồn, id) 180 ngày; bài mồ côi được dọn độc lập và chia lô 500.

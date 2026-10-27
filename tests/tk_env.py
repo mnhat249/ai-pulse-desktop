@@ -13,7 +13,7 @@ import pytest
 from app.config import Settings
 from app.storage.ui_queries import ClusterView, open_reader
 from app.ui.backend import UIEvent
-from app.ui.model import UIModel
+from app.ui.model import ALL_TOPICS, UIModel
 from app.ui.widget import FloatingWidget
 from tests.helpers_ui import seed_db
 
@@ -67,6 +67,7 @@ class Env:
         self.notifier.shown.clear()
         self.widget._model.set_filter_label("Tất cả")
         self.widget._model.set_source_label("Mọi nguồn")
+        self.widget._model.set_topic_label(ALL_TOPICS)
         self.widget._model.expanded.clear()
         self.widget._closed = False
         self.widget._tray_ok = False

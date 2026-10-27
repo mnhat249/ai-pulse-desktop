@@ -1,0 +1,816 @@
+# Thuật ngữ viết tắt hay gặp khi đọc tin AI / CS. Mỗi mục một [[term]]:
+# term (chữ viết tắt), full (tên đầy đủ), group (nhóm), vi (giải thích), example (ví dụ),
+# aliases (tùy chọn: cách viết khác để nhận ra trong bài), common = true (tùy chọn: quá phổ biến,
+# không gắn chip trên thẻ tin). Chỉ từ có từ hai chữ hoa trở lên (RAG, MoE, KV cache) mới được gắn chip.
+
+# ---- LLM & huấn luyện ----------------------------------------------------------------------
+
+[[term]]
+term = "LLM"
+full = "Large Language Model"
+group = "LLM & huấn luyện"
+vi = "Mô hình ngôn ngữ lớn: mạng nơ-ron hàng tỉ tham số, học từ lượng văn bản khổng lồ để đoán từ tiếp theo. Nhờ vậy nó viết, dịch, tóm tắt và trả lời câu hỏi được."
+example = "Claude, GPT và Gemini đều là LLM."
+
+[[term]]
+term = "SLM"
+full = "Small Language Model"
+group = "LLM & huấn luyện"
+vi = "Mô hình ngôn ngữ nhỏ (thường dưới khoảng 10 tỉ tham số), đủ nhẹ để chạy trên laptop hoặc điện thoại. Đổi lại kém hơn LLM ở các việc khó."
+example = "Phi và Gemma bản nhỏ thường được gọi là SLM."
+
+[[term]]
+term = "GPT"
+full = "Generative Pre-trained Transformer"
+group = "LLM & huấn luyện"
+vi = "Kiểu model Transformer được huấn luyện trước trên văn bản lớn rồi sinh chữ lần lượt từng token. Cũng là tên dòng model của OpenAI."
+example = "ChatGPT là ứng dụng chat chạy trên các model GPT."
+
+[[term]]
+term = "Transformer"
+full = "Transformer"
+group = "LLM & huấn luyện"
+vi = "Kiến trúc mạng nơ-ron ra đời năm 2017, dùng cơ chế attention để mỗi từ 'nhìn' được mọi từ khác trong câu. Gần như mọi LLM hiện nay đều dựa trên nó."
+example = "Bài báo 'Attention Is All You Need' giới thiệu Transformer."
+
+[[term]]
+term = "Token"
+full = "Token"
+group = "LLM & huấn luyện"
+vi = "Mẩu chữ nhỏ nhất model xử lý, thường là một từ hoặc một phần của từ. Giá API và độ dài ngữ cảnh đều tính theo token."
+example = "Câu 'Xin chào thế giới' có thể thành 5-8 token."
+
+[[term]]
+term = "Context window"
+full = "Context window"
+group = "LLM & huấn luyện"
+vi = "Lượng token tối đa model đọc được trong một lần gọi, gồm cả câu hỏi, tài liệu đính kèm và câu trả lời. Vượt quá thì phần đầu bị cắt hoặc báo lỗi."
+example = "Model có context window 1 triệu token đọc được cả một cuốn sách dài."
+aliases = ["context length"]
+
+[[term]]
+term = "MoE"
+full = "Mixture of Experts"
+group = "LLM & huấn luyện"
+vi = "Kiến trúc chia model thành nhiều 'chuyên gia' con; mỗi token chỉ đi qua vài chuyên gia. Model rất lớn nhưng mỗi lần chạy chỉ dùng một phần nên nhanh và rẻ hơn."
+example = "Mixtral 8x7B là model MoE có 8 chuyên gia."
+
+[[term]]
+term = "SFT"
+full = "Supervised Fine-Tuning"
+group = "LLM & huấn luyện"
+vi = "Tinh chỉnh có giám sát: dạy tiếp model bằng các cặp câu hỏi - câu trả lời mẫu do người viết. Thường là bước đầu để biến model thô thành trợ lý biết nghe lời."
+example = "Sau pre-training, nhóm làm SFT trên 100 nghìn đoạn hội thoại mẫu."
+
+[[term]]
+term = "Fine-tuning"
+full = "Fine-tuning"
+group = "LLM & huấn luyện"
+vi = "Huấn luyện thêm một model có sẵn trên dữ liệu riêng để nó giỏi một việc cụ thể. Rẻ hơn rất nhiều so với huấn luyện từ đầu."
+example = "Fine-tuning Llama trên văn bản pháp luật Việt Nam."
+aliases = ["finetune", "fine-tune"]
+
+[[term]]
+term = "LoRA"
+full = "Low-Rank Adaptation"
+group = "LLM & huấn luyện"
+vi = "Cách fine-tune tiết kiệm: giữ nguyên model gốc, chỉ học thêm vài ma trận nhỏ gắn vào. File LoRA chỉ vài chục MB và có thể bật/tắt như plugin."
+example = "Cộng đồng chia sẻ LoRA cho Stable Diffusion để vẽ theo một phong cách."
+
+[[term]]
+term = "QLoRA"
+full = "Quantized LoRA"
+group = "LLM & huấn luyện"
+vi = "LoRA chạy trên model đã lượng tử hóa 4-bit, nên fine-tune được model lớn trên một GPU phổ thông."
+example = "Dùng QLoRA để fine-tune model 70B trên một GPU 48 GB."
+
+[[term]]
+term = "RLHF"
+full = "Reinforcement Learning from Human Feedback"
+group = "LLM & huấn luyện"
+vi = "Học tăng cường từ phản hồi của người: người chấm câu trả lời nào tốt hơn, model học để được chấm cao. Giúp model hữu ích và an toàn hơn."
+example = "ChatGPT nổi tiếng nhờ được huấn luyện thêm bằng RLHF."
+
+[[term]]
+term = "DPO"
+full = "Direct Preference Optimization"
+group = "LLM & huấn luyện"
+vi = "Cách đơn giản hơn RLHF: học thẳng từ cặp 'câu trả lời được chọn / bị loại' mà không cần model chấm điểm riêng."
+example = "Nhiều model mở dùng DPO thay cho RLHF vì dễ làm."
+
+[[term]]
+term = "RLVR"
+full = "Reinforcement Learning with Verifiable Rewards"
+group = "LLM & huấn luyện"
+vi = "Học tăng cường với phần thưởng kiểm chứng được tự động, ví dụ đáp án toán đúng hay code chạy qua test. Là cách chính để dạy model suy luận."
+example = "Model suy luận được huấn luyện bằng RLVR trên hàng nghìn bài toán."
+
+[[term]]
+term = "CoT"
+full = "Chain of Thought"
+group = "LLM & huấn luyện"
+vi = "Chuỗi suy nghĩ: để model viết từng bước lập luận trước khi trả lời. Thường làm kết quả toán và logic chính xác hơn."
+example = "Thêm câu 'hãy suy nghĩ từng bước' để kích hoạt CoT."
+
+[[term]]
+term = "Reasoning model"
+full = "Reasoning model"
+group = "LLM & huấn luyện"
+vi = "Model được huấn luyện để 'nghĩ' một lúc (sinh nhiều token suy luận) trước khi trả lời. Chậm và tốn token hơn nhưng giỏi bài khó."
+example = "Dòng o-series của OpenAI và chế độ extended thinking của Claude là reasoning model."
+aliases = ["thinking model"]
+
+[[term]]
+term = "ICL"
+full = "In-Context Learning"
+group = "LLM & huấn luyện"
+vi = "Model học cách làm một việc chỉ từ vài ví dụ đặt trong prompt, không cần huấn luyện lại."
+example = "Đưa 3 ví dụ phân loại email rồi để model tự phân loại email thứ tư."
+
+[[term]]
+term = "Few-shot"
+full = "Few-shot prompting"
+group = "LLM & huấn luyện"
+vi = "Kỹ thuật đưa vài ví dụ mẫu vào prompt. Zero-shot là không có ví dụ, one-shot là một ví dụ."
+example = "Prompt few-shot gồm 5 cặp câu hỏi - đáp mẫu."
+aliases = ["zero-shot", "one-shot"]
+
+[[term]]
+term = "Distillation"
+full = "Knowledge distillation"
+group = "LLM & huấn luyện"
+vi = "Chưng cất: dùng model lớn (thầy) sinh dữ liệu hoặc xác suất để dạy model nhỏ (trò). Model nhỏ giữ được phần lớn khả năng mà chạy nhanh hơn nhiều."
+example = "Bản 7B được distill từ model 671B."
+aliases = ["distill", "distilled"]
+
+[[term]]
+term = "Quantization"
+full = "Quantization"
+group = "LLM & huấn luyện"
+vi = "Lượng tử hóa: lưu trọng số bằng ít bit hơn (8, 4 bit thay vì 16) để model nhẹ và chạy nhanh hơn, đổi lại giảm chất lượng một chút."
+example = "Bản Q4 của model 8B chỉ cần khoảng 5 GB RAM."
+aliases = ["quantized", "quantize"]
+
+[[term]]
+term = "GGUF"
+full = "GPT-Generated Unified Format"
+group = "LLM & huấn luyện"
+vi = "Định dạng file chứa model đã lượng tử hóa, dùng bởi llama.cpp, Ollama, LM Studio để chạy LLM trên máy cá nhân."
+example = "Tải file GGUF Q4_K_M rồi mở bằng LM Studio."
+
+[[term]]
+term = "Open weights"
+full = "Open-weight model"
+group = "LLM & huấn luyện"
+vi = "Model công bố trọng số để ai cũng tải về chạy được, nhưng chưa chắc công bố dữ liệu và code huấn luyện (khác với 'open source' đầy đủ)."
+example = "Llama và Qwen là model open weights."
+aliases = ["open-weight", "open weight"]
+
+[[term]]
+term = "Hallucination"
+full = "Hallucination"
+group = "LLM & huấn luyện"
+vi = "Ảo giác: model tự tin bịa ra thông tin sai, như trích nguồn không tồn tại. Là lý do phải kiểm tra lại câu trả lời quan trọng."
+example = "Model bịa ra một bài báo khoa học không có thật."
+
+[[term]]
+term = "Prompt injection"
+full = "Prompt injection"
+group = "LLM & huấn luyện"
+vi = "Tấn công chèn lệnh: giấu chỉ dẫn trong dữ liệu (trang web, email, file) để model làm theo thay vì theo người dùng."
+example = "Trang web chứa dòng chữ ẩn 'bỏ qua mọi hướng dẫn trước đó'."
+
+[[term]]
+term = "Temperature"
+full = "Sampling temperature"
+group = "LLM & huấn luyện"
+vi = "Tham số chỉnh độ ngẫu nhiên khi model chọn token: thấp thì chắc chắn và lặp lại, cao thì sáng tạo nhưng dễ lạc đề."
+example = "Đặt temperature 0 khi cần câu trả lời ổn định."
+
+# ---- Truy xuất & agent ---------------------------------------------------------------------
+
+[[term]]
+term = "RAG"
+full = "Retrieval-Augmented Generation"
+group = "Truy xuất & agent"
+vi = "Sinh văn bản có tra cứu: trước khi trả lời, hệ thống tìm các đoạn tài liệu liên quan rồi đưa vào prompt. Model trả lời dựa trên tài liệu thật nên ít bịa và cập nhật được."
+example = "Chatbot hỏi đáp nội quy công ty dùng RAG trên kho tài liệu nội bộ."
+
+[[term]]
+term = "Embedding"
+full = "Embedding"
+group = "Truy xuất & agent"
+vi = "Biểu diễn một đoạn chữ (hoặc ảnh) thành một dãy số. Hai đoạn cùng nghĩa cho ra hai dãy số gần nhau, nên dùng để tìm kiếm theo nghĩa."
+example = "NeuralRadar dùng embedding để nhận ra hai tin cùng nói về một sự kiện."
+
+[[term]]
+term = "Vector DB"
+full = "Vector database"
+group = "Truy xuất & agent"
+vi = "Cơ sở dữ liệu lưu embedding và tìm nhanh các vector gần nhất. Là 'bộ nhớ' quen thuộc của hệ thống RAG."
+example = "Qdrant, Milvus, pgvector là các vector DB."
+aliases = ["vector database", "vector store"]
+
+[[term]]
+term = "ANN"
+full = "Approximate Nearest Neighbor"
+group = "Truy xuất & agent"
+vi = "Tìm láng giềng gần đúng: thuật toán tìm vector gần nhất thật nhanh, chấp nhận thỉnh thoảng sót. Cũng có thể là viết tắt của Artificial Neural Network tùy ngữ cảnh."
+example = "HNSW là thuật toán ANN phổ biến."
+
+[[term]]
+term = "BM25"
+full = "Best Matching 25"
+group = "Truy xuất & agent"
+vi = "Thuật toán tìm kiếm theo từ khóa kinh điển, chấm điểm tài liệu theo tần suất từ. Hay được kết hợp với tìm theo embedding (hybrid search)."
+example = "Hybrid search = BM25 + vector search."
+
+[[term]]
+term = "Reranker"
+full = "Reranker"
+group = "Truy xuất & agent"
+vi = "Model chấm lại và sắp xếp lại danh sách kết quả tìm được, đưa đoạn liên quan nhất lên đầu trước khi đưa cho LLM."
+example = "Lấy 50 đoạn bằng vector search rồi dùng reranker chọn 5 đoạn tốt nhất."
+aliases = ["rerank", "reranking"]
+
+[[term]]
+term = "Agent"
+full = "AI agent"
+group = "Truy xuất & agent"
+vi = "Hệ thống để LLM tự lên kế hoạch và gọi công cụ (tìm web, chạy code, sửa file) nhiều bước liên tiếp cho tới khi xong việc, thay vì chỉ trả lời một lần."
+example = "Agent lập trình tự đọc repo, sửa code rồi chạy test."
+aliases = ["agentic", "AI agent"]
+
+[[term]]
+term = "Tool use"
+full = "Tool use / function calling"
+group = "Truy xuất & agent"
+vi = "Khả năng model trả về một lệnh gọi hàm có cấu trúc (tên hàm + tham số) để chương trình thực thi, rồi đọc kết quả và trả lời tiếp."
+example = "Model gọi hàm get_weather(city='Hà Nội') thay vì đoán thời tiết."
+aliases = ["function calling", "tool calling"]
+
+[[term]]
+term = "ReAct"
+full = "Reasoning + Acting"
+group = "Truy xuất & agent"
+vi = "Mẫu thiết kế agent xen kẽ 'suy nghĩ' và 'hành động' (gọi công cụ), đọc kết quả rồi nghĩ tiếp. Là nền của nhiều agent hiện nay."
+example = "Suy nghĩ: cần tra giá. Hành động: search(...). Quan sát: ..."
+
+[[term]]
+term = "MCP"
+full = "Model Context Protocol"
+group = "Truy xuất & agent"
+vi = "Chuẩn mở do Anthropic đề xuất để nối AI với công cụ và dữ liệu bên ngoài. Viết một MCP server một lần là nhiều ứng dụng AI dùng được."
+example = "Cài MCP server GitHub để Claude đọc issue và PR."
+
+[[term]]
+term = "A2A"
+full = "Agent2Agent protocol"
+group = "Truy xuất & agent"
+vi = "Giao thức để các agent của nhiều hãng nói chuyện và giao việc cho nhau. MCP nối agent với công cụ, còn A2A nối agent với agent."
+example = "Agent đặt vé giao việc thanh toán cho agent của ngân hàng qua A2A."
+
+[[term]]
+term = "Multi-agent"
+full = "Multi-agent system"
+group = "Truy xuất & agent"
+vi = "Nhiều agent chia vai cùng làm một việc lớn, ví dụ một agent nghiên cứu, một agent viết code, một agent review."
+example = "Hệ multi-agent: người lập kế hoạch giao việc cho các agent con chạy song song."
+
+# ---- Claude & công cụ ----------------------------------------------------------------------
+
+[[term]]
+term = "Claude Code"
+full = "Claude Code"
+group = "Claude & công cụ"
+vi = "Công cụ lập trình dạng agent của Anthropic: chạy trong terminal, IDE, app desktop hoặc web, tự đọc repo, sửa file, chạy lệnh và test."
+example = "Gõ 'claude' trong thư mục dự án để bắt đầu một phiên Claude Code."
+common = true
+
+[[term]]
+term = "Skill"
+full = "Agent Skill"
+group = "Claude & công cụ"
+vi = "Gói hướng dẫn (file SKILL.md kèm script, tài liệu) dạy Claude làm một việc theo cách riêng của bạn. Claude chỉ nạp skill khi việc đang làm cần đến."
+example = "Skill 'review-pr' chứa checklist review riêng của dự án."
+aliases = ["Agent Skills", "SKILL.md"]
+
+[[term]]
+term = "Plugin"
+full = "Claude Code plugin"
+group = "Claude & công cụ"
+vi = "Gói cài một lần gồm nhiều thứ: slash command, skill, subagent, hook, MCP server. Dùng để chia sẻ cả bộ quy trình cho người khác."
+example = "Cài plugin từ marketplace để có sẵn lệnh deploy của nhóm."
+
+[[term]]
+term = "Subagent"
+full = "Subagent"
+group = "Claude & công cụ"
+vi = "Agent con có ngữ cảnh riêng, được giao một việc hẹp (tìm code, review, chạy test) rồi trả kết quả tóm tắt về, giúp phiên chính không bị đầy ngữ cảnh."
+example = "Giao subagent 'reviewer' đọc diff và báo lỗi."
+aliases = ["subagents", "sub-agent"]
+
+[[term]]
+term = "Hook"
+full = "Hook"
+group = "Claude & công cụ"
+vi = "Lệnh tự chạy ở một thời điểm cố định, ví dụ trước hoặc sau khi Claude sửa file hay chạy lệnh. Dùng để format code, chặn lệnh nguy hiểm, kiểm tra trước commit."
+example = "Hook sau mỗi lần sửa file tự chạy 'ruff format'."
+aliases = ["hooks"]
+
+[[term]]
+term = "Slash command"
+full = "Slash command"
+group = "Claude & công cụ"
+vi = "Lệnh gõ bắt đầu bằng dấu '/', gọi một prompt hoặc quy trình đã soạn sẵn."
+example = "/review-pr, /handoff, /test."
+aliases = ["slash commands"]
+
+[[term]]
+term = "CLAUDE.md"
+full = "CLAUDE.md"
+group = "Claude & công cụ"
+vi = "File ghi chú cho Claude trong dự án: lệnh build/test, quy tắc code, bài học cũ. Claude đọc nó mỗi khi bắt đầu phiên làm việc."
+example = "Ghi vào CLAUDE.md: 'chạy python scripts/check.py trước khi commit'."
+aliases = ["claude.md"]
+
+[[term]]
+term = "Agent SDK"
+full = "Claude Agent SDK"
+group = "Claude & công cụ"
+vi = "Thư viện để tự xây agent dùng cùng vòng lặp và công cụ như Claude Code, nhúng vào ứng dụng của bạn."
+example = "Dùng Agent SDK viết một agent tự trả lời ticket hỗ trợ."
+
+[[term]]
+term = "Worktree"
+full = "Git worktree"
+group = "Claude & công cụ"
+vi = "Bản checkout thứ hai của cùng một repo ở thư mục khác, trên nhánh khác. Cho phép nhiều phiên Claude làm song song mà không giẫm file của nhau."
+example = "git worktree add .claude/worktrees/ui -b feat/ui"
+
+# ---- Model ảnh, âm thanh, đa phương thức ---------------------------------------------------
+
+[[term]]
+term = "Diffusion"
+full = "Diffusion model"
+group = "Ảnh, âm thanh, đa phương thức"
+vi = "Loại model tạo ảnh/video bằng cách bắt đầu từ nhiễu ngẫu nhiên rồi khử nhiễu dần theo mô tả chữ. Là nền của Stable Diffusion, Flux, Sora."
+example = "Model diffusion cần khoảng 20-50 bước khử nhiễu cho mỗi ảnh."
+aliases = ["diffusion model"]
+
+[[term]]
+term = "VLM"
+full = "Vision-Language Model"
+group = "Ảnh, âm thanh, đa phương thức"
+vi = "Model hiểu cả ảnh lẫn chữ: mô tả ảnh, đọc biểu đồ, trả lời câu hỏi về ảnh chụp màn hình."
+example = "Gửi ảnh hóa đơn cho VLM để trích tổng tiền."
+
+[[term]]
+term = "Multimodal"
+full = "Multimodal"
+group = "Ảnh, âm thanh, đa phương thức"
+vi = "Đa phương thức: model nhận hoặc sinh nhiều loại dữ liệu như chữ, ảnh, âm thanh, video."
+example = "Gemini là model multimodal: nghe được audio và xem được video."
+
+[[term]]
+term = "ViT"
+full = "Vision Transformer"
+group = "Ảnh, âm thanh, đa phương thức"
+vi = "Transformer dùng cho ảnh: cắt ảnh thành các ô nhỏ rồi xử lý như các token chữ."
+example = "Phần 'mắt' của nhiều VLM là một ViT."
+
+[[term]]
+term = "CNN"
+full = "Convolutional Neural Network"
+group = "Ảnh, âm thanh, đa phương thức"
+vi = "Mạng nơ-ron tích chập, quét ảnh bằng các bộ lọc nhỏ để nhận ra cạnh, hình, vật thể. Thống trị thị giác máy tính trước thời Transformer."
+example = "ResNet là CNN nổi tiếng."
+
+[[term]]
+term = "GAN"
+full = "Generative Adversarial Network"
+group = "Ảnh, âm thanh, đa phương thức"
+vi = "Hai mạng đấu nhau: một mạng tạo ảnh giả, một mạng đoán thật hay giả; cả hai cùng giỏi lên. Từng là cách tạo ảnh hàng đầu trước diffusion."
+example = "StyleGAN tạo ra những khuôn mặt người không có thật."
+
+[[term]]
+term = "VAE"
+full = "Variational Autoencoder"
+group = "Ảnh, âm thanh, đa phương thức"
+vi = "Model nén dữ liệu thành dạng gọn (không gian ẩn) rồi dựng lại. Trong Stable Diffusion, VAE chuyển qua lại giữa ảnh và không gian ẩn."
+example = "Đổi VAE có thể làm màu ảnh tươi hơn."
+
+[[term]]
+term = "OCR"
+full = "Optical Character Recognition"
+group = "Ảnh, âm thanh, đa phương thức"
+vi = "Nhận dạng chữ trong ảnh hoặc bản scan để chuyển thành văn bản máy đọc được."
+example = "OCR hóa đơn giấy để nhập vào phần mềm kế toán."
+
+[[term]]
+term = "ASR"
+full = "Automatic Speech Recognition"
+group = "Ảnh, âm thanh, đa phương thức"
+vi = "Nhận dạng giọng nói: chuyển lời nói thành chữ."
+example = "Whisper là model ASR mở của OpenAI."
+aliases = ["speech-to-text", "STT"]
+
+[[term]]
+term = "TTS"
+full = "Text-to-Speech"
+group = "Ảnh, âm thanh, đa phương thức"
+vi = "Chuyển văn bản thành giọng nói tự nhiên."
+example = "App đọc báo dùng TTS giọng miền Bắc."
+
+[[term]]
+term = "T2I"
+full = "Text-to-Image"
+group = "Ảnh, âm thanh, đa phương thức"
+vi = "Tạo ảnh từ mô tả bằng chữ."
+example = "Gõ 'con mèo đội nón lá' để model T2I vẽ."
+aliases = ["text-to-image"]
+
+[[term]]
+term = "T2V"
+full = "Text-to-Video"
+group = "Ảnh, âm thanh, đa phương thức"
+vi = "Tạo video từ mô tả bằng chữ. I2V (image-to-video) là biến một ảnh tĩnh thành đoạn video."
+example = "Sora và Veo là model T2V."
+aliases = ["text-to-video", "I2V", "image-to-video"]
+
+# ---- Hạ tầng & phần cứng -------------------------------------------------------------------
+
+[[term]]
+term = "GPU"
+full = "Graphics Processing Unit"
+group = "Hạ tầng & phần cứng"
+vi = "Bộ xử lý đồ họa, có hàng nghìn lõi tính song song nên rất hợp với phép nhân ma trận của mạng nơ-ron. Là phần cứng chính để huấn luyện và chạy AI."
+example = "Huấn luyện model lớn cần hàng nghìn GPU H100."
+
+[[term]]
+term = "TPU"
+full = "Tensor Processing Unit"
+group = "Hạ tầng & phần cứng"
+vi = "Chip chuyên cho AI do Google thiết kế, dùng trong Google Cloud để huấn luyện và chạy model như Gemini."
+example = "Gemini được huấn luyện trên TPU."
+
+[[term]]
+term = "NPU"
+full = "Neural Processing Unit"
+group = "Hạ tầng & phần cứng"
+vi = "Bộ xử lý AI nhỏ, tiết kiệm điện, gắn trong laptop và điện thoại để chạy model ngay trên máy."
+example = "Laptop 'AI PC' có NPU để làm mờ nền khi gọi video."
+
+[[term]]
+term = "VRAM"
+full = "Video RAM"
+group = "Hạ tầng & phần cứng"
+vi = "Bộ nhớ riêng của GPU. Model phải nằm vừa VRAM mới chạy nhanh, nên VRAM quyết định chạy được model cỡ nào."
+example = "Model 8B bản 4-bit cần khoảng 6 GB VRAM."
+
+[[term]]
+term = "FLOPS"
+full = "Floating-Point Operations Per Second"
+group = "Hạ tầng & phần cứng"
+vi = "Số phép tính số thực mỗi giây, đo sức mạnh phần cứng. FLOPs (chữ s thường) là tổng số phép tính dùng để huấn luyện một model."
+example = "Model được huấn luyện với khoảng 10^25 FLOPs."
+aliases = ["FLOPs"]
+
+[[term]]
+term = "CUDA"
+full = "Compute Unified Device Architecture"
+group = "Hạ tầng & phần cứng"
+vi = "Nền tảng lập trình GPU của NVIDIA. Hầu hết thư viện AI (PyTorch...) chạy trên CUDA, là lý do NVIDIA thống trị thị trường."
+example = "Cài đúng bản CUDA để PyTorch dùng được GPU."
+
+[[term]]
+term = "Inference"
+full = "Inference"
+group = "Hạ tầng & phần cứng"
+vi = "Suy luận: giai đoạn dùng model đã huấn luyện để trả lời, khác với huấn luyện. Chi phí inference là tiền bạn trả mỗi lần gọi API."
+example = "Chip mới giảm 50% chi phí inference."
+
+[[term]]
+term = "KV cache"
+full = "Key-Value cache"
+group = "Hạ tầng & phần cứng"
+vi = "Bộ nhớ đệm lưu kết quả attention của các token đã xử lý để không phải tính lại khi sinh token mới. Giúp sinh chữ nhanh nhưng tốn bộ nhớ khi ngữ cảnh dài."
+example = "Ngữ cảnh 1 triệu token làm KV cache chiếm hàng chục GB."
+
+[[term]]
+term = "Prompt caching"
+full = "Prompt caching"
+group = "Hạ tầng & phần cứng"
+vi = "Nhà cung cấp lưu lại phần đầu prompt lặp lại (hướng dẫn hệ thống, tài liệu dài) để lần gọi sau rẻ và nhanh hơn."
+example = "Bật prompt caching cho tài liệu 100 trang dùng chung giữa các câu hỏi."
+
+[[term]]
+term = "Latency"
+full = "Latency"
+group = "Hạ tầng & phần cứng"
+vi = "Độ trễ: thời gian từ lúc gửi yêu cầu tới lúc nhận phản hồi. Với LLM hay đo thêm TTFT (thời gian tới token đầu tiên)."
+example = "Model nhỏ có latency thấp, hợp cho autocomplete."
+aliases = ["TTFT"]
+
+[[term]]
+term = "On-device"
+full = "On-device AI"
+group = "Hạ tầng & phần cứng"
+vi = "AI chạy ngay trên máy của bạn, không gửi dữ liệu lên server: riêng tư hơn và chạy được khi mất mạng."
+example = "Gemini Nano chạy on-device trên điện thoại Pixel."
+aliases = ["local model", "edge AI"]
+
+# ---- Đánh giá ------------------------------------------------------------------------------
+
+[[term]]
+term = "Benchmark"
+full = "Benchmark"
+group = "Đánh giá"
+vi = "Bộ bài kiểm tra chuẩn để so sánh các model với nhau. Điểm benchmark cao chưa chắc dùng thật tốt, vì model có thể đã 'học tủ'."
+example = "Hãng khoe điểm benchmark mới ngay khi ra model."
+
+[[term]]
+term = "SOTA"
+full = "State of the Art"
+group = "Đánh giá"
+vi = "Tốt nhất hiện tại: kết quả cao nhất từng đạt được trên một bài toán hoặc benchmark."
+example = "Model mới đạt SOTA trên benchmark lập trình."
+
+[[term]]
+term = "MMLU"
+full = "Massive Multitask Language Understanding"
+group = "Đánh giá"
+vi = "Benchmark trắc nghiệm kiến thức 57 lĩnh vực (toán, luật, y...). Từng là thước đo phổ biến nhất, nay nhiều model đã gần điểm tối đa."
+example = "Model đạt 90% MMLU."
+
+[[term]]
+term = "SWE-bench"
+full = "Software Engineering Benchmark"
+group = "Đánh giá"
+vi = "Benchmark đo khả năng sửa lỗi thật trong các repo Python trên GitHub: model phải viết bản vá làm test chạy qua."
+example = "Agent lập trình giải được 70% SWE-bench Verified."
+
+[[term]]
+term = "Eval"
+full = "Evaluation"
+group = "Đánh giá"
+vi = "Bộ kiểm tra riêng để đo model hoặc prompt có làm đúng việc của bạn không, thay vì chỉ tin điểm benchmark chung."
+example = "Viết eval 50 câu hỏi khách hàng thật trước khi đổi model."
+aliases = ["evals", "evaluation"]
+
+[[term]]
+term = "LLM-as-a-judge"
+full = "LLM-as-a-judge"
+group = "Đánh giá"
+vi = "Dùng một LLM để chấm điểm câu trả lời của LLM khác. Nhanh và rẻ hơn người chấm nhưng có thiên vị riêng."
+example = "Dùng model mạnh chấm 1.000 câu trả lời theo thang 1-5."
+
+[[term]]
+term = "F1"
+full = "F1 score"
+group = "Đánh giá"
+vi = "Điểm cân bằng giữa precision (bắt đúng bao nhiêu trong số đã bắt) và recall (bắt được bao nhiêu trong số cần bắt). Từ 0 tới 1, càng cao càng tốt."
+example = "NeuralRadar chọn ngưỡng lọc trùng theo F1 cao nhất."
+aliases = ["precision", "recall"]
+
+[[term]]
+term = "Perplexity"
+full = "Perplexity"
+group = "Đánh giá"
+vi = "Độ 'bối rối' của model khi đoán văn bản: càng thấp nghĩa là model dự đoán chữ càng tốt. Cũng là tên một công ty tìm kiếm bằng AI."
+example = "Perplexity giảm sau khi huấn luyện thêm dữ liệu tiếng Việt."
+
+# ---- AI nói chung --------------------------------------------------------------------------
+
+[[term]]
+term = "AI"
+full = "Artificial Intelligence"
+group = "AI nói chung"
+vi = "Trí tuệ nhân tạo: lĩnh vực làm cho máy tính làm được việc cần trí thông minh như hiểu ngôn ngữ, nhìn, suy luận."
+example = "Trợ lý ảo và xe tự lái đều là ứng dụng AI."
+common = true
+
+[[term]]
+term = "ML"
+full = "Machine Learning"
+group = "AI nói chung"
+vi = "Học máy: nhánh của AI, máy tự học quy luật từ dữ liệu thay vì được lập trình từng luật."
+example = "Bộ lọc thư rác dùng ML học từ các email bị đánh dấu spam."
+
+[[term]]
+term = "DL"
+full = "Deep Learning"
+group = "AI nói chung"
+vi = "Học sâu: học máy dùng mạng nơ-ron nhiều lớp. Là nền của hầu hết AI hiện đại."
+example = "Nhận diện khuôn mặt dùng deep learning."
+aliases = ["deep learning"]
+
+[[term]]
+term = "NLP"
+full = "Natural Language Processing"
+group = "AI nói chung"
+vi = "Xử lý ngôn ngữ tự nhiên: dạy máy hiểu và tạo ngôn ngữ của người (dịch, tóm tắt, phân loại văn bản)."
+example = "Dịch máy là bài toán NLP kinh điển."
+
+[[term]]
+term = "NER"
+full = "Named Entity Recognition"
+group = "AI nói chung"
+vi = "Nhận diện thực thể có tên trong văn bản: tên người, công ty, địa điểm, ngày tháng."
+example = "NER trích 'Anthropic' là công ty, 'San Francisco' là địa điểm."
+
+[[term]]
+term = "RL"
+full = "Reinforcement Learning"
+group = "AI nói chung"
+vi = "Học tăng cường: model thử hành động, được thưởng hoặc phạt, rồi học cách làm để được thưởng nhiều nhất."
+example = "AlphaGo học chơi cờ vây bằng RL."
+
+[[term]]
+term = "AGI"
+full = "Artificial General Intelligence"
+group = "AI nói chung"
+vi = "Trí tuệ nhân tạo tổng quát: AI làm được hầu hết việc trí óc ở mức con người. Chưa có định nghĩa thống nhất và chưa ai đạt được."
+example = "Nhiều lab AI tuyên bố mục tiêu dài hạn là AGI."
+
+[[term]]
+term = "ASI"
+full = "Artificial Superintelligence"
+group = "AI nói chung"
+vi = "Siêu trí tuệ nhân tạo: AI vượt xa con người ở hầu hết lĩnh vực. Chủ yếu xuất hiện trong thảo luận về an toàn AI."
+example = "Các bài về an toàn AI bàn cách kiểm soát ASI."
+
+[[term]]
+term = "Alignment"
+full = "AI alignment"
+group = "AI nói chung"
+vi = "Căn chỉnh: làm cho AI hành động đúng ý định và giá trị của con người, không gây hại kể cả khi rất giỏi."
+example = "Nhóm alignment nghiên cứu vì sao model đôi khi nói dối."
+
+[[term]]
+term = "GenAI"
+full = "Generative AI"
+group = "AI nói chung"
+vi = "AI tạo sinh: AI tạo ra nội dung mới (chữ, ảnh, nhạc, video, code) thay vì chỉ phân loại hay dự đoán."
+example = "ChatGPT và Midjourney là công cụ GenAI."
+aliases = ["generative AI", "AIGC"]
+
+# ---- CS & phần mềm -------------------------------------------------------------------------
+
+[[term]]
+term = "API"
+full = "Application Programming Interface"
+group = "CS & phần mềm"
+vi = "Giao diện lập trình: 'cửa' để chương trình này gọi chức năng của chương trình khác theo một quy ước định sẵn."
+example = "Gọi API của Gemini để tóm tắt bài báo."
+common = true
+
+[[term]]
+term = "SDK"
+full = "Software Development Kit"
+group = "CS & phần mềm"
+vi = "Bộ công cụ phát triển: thư viện, tài liệu, ví dụ để dùng một nền tảng hoặc API dễ hơn."
+example = "Cài SDK Python của Anthropic để gọi Claude."
+
+[[term]]
+term = "CLI"
+full = "Command-Line Interface"
+group = "CS & phần mềm"
+vi = "Giao diện dòng lệnh: dùng chương trình bằng cách gõ lệnh trong terminal thay vì bấm nút."
+example = "python -m app.cli status là một lệnh CLI."
+
+[[term]]
+term = "REST"
+full = "Representational State Transfer"
+group = "CS & phần mềm"
+vi = "Kiểu thiết kế API qua HTTP: mỗi tài nguyên có một URL, thao tác bằng GET (đọc), POST (tạo), PUT (sửa), DELETE (xóa)."
+example = "GET /repos/{owner}/{repo} của GitHub là REST API."
+
+[[term]]
+term = "JSON"
+full = "JavaScript Object Notation"
+group = "CS & phần mềm"
+vi = "Định dạng văn bản để lưu và trao đổi dữ liệu có cấu trúc, dễ cho cả người và máy đọc."
+example = '{"title": "Tin mới", "importance": 4}'
+common = true
+
+[[term]]
+term = "YAML"
+full = "YAML Ain't Markup Language"
+group = "CS & phần mềm"
+vi = "Định dạng file cấu hình dựa trên thụt lề, dễ đọc hơn JSON. Hay gặp trong CI và Docker Compose."
+example = "File .github/workflows/check.yml viết bằng YAML."
+
+[[term]]
+term = "TOML"
+full = "Tom's Obvious Minimal Language"
+group = "CS & phần mềm"
+vi = "Định dạng file cấu hình đơn giản theo dạng khóa = giá trị và [mục]. Python dùng nó cho pyproject.toml."
+example = "settings.toml của NeuralRadar."
+
+[[term]]
+term = "CI/CD"
+full = "Continuous Integration / Continuous Delivery"
+group = "CS & phần mềm"
+vi = "Tích hợp và triển khai liên tục: mỗi lần đẩy code lên, hệ thống tự chạy test và (nếu đạt) tự triển khai."
+example = "GitHub Actions chạy test mỗi khi mở PR là CI."
+aliases = ["CI", "CD"]
+
+[[term]]
+term = "PR"
+full = "Pull Request"
+group = "CS & phần mềm"
+vi = "Yêu cầu gộp một nhánh code vào nhánh chính, kèm chỗ để người khác review và bình luận trước khi merge."
+example = "Mở PR từ feat/reader-ux vào main."
+common = true
+
+[[term]]
+term = "OSS"
+full = "Open-Source Software"
+group = "CS & phần mềm"
+vi = "Phần mềm mã nguồn mở: ai cũng xem, sửa và phân phối lại mã nguồn theo giấy phép."
+example = "Linux, Python, PyTorch là OSS."
+aliases = ["open source"]
+
+[[term]]
+term = "ORM"
+full = "Object-Relational Mapping"
+group = "CS & phần mềm"
+vi = "Thư viện cho phép thao tác bảng cơ sở dữ liệu như đối tượng trong code, không phải viết SQL thủ công."
+example = "SQLAlchemy là ORM phổ biến của Python."
+
+[[term]]
+term = "SQL"
+full = "Structured Query Language"
+group = "CS & phần mềm"
+vi = "Ngôn ngữ truy vấn cơ sở dữ liệu quan hệ: lấy, thêm, sửa, xóa dữ liệu trong bảng."
+example = "SELECT title FROM clusters WHERE is_noise = 0"
+common = true
+
+[[term]]
+term = "WAL"
+full = "Write-Ahead Logging"
+group = "CS & phần mềm"
+vi = "Ghi nhật ký trước: thay đổi được ghi vào file log trước rồi mới vào DB chính, giúp vừa đọc vừa ghi không chặn nhau và an toàn khi mất điện."
+example = "NeuralRadar bật SQLite WAL để giao diện đọc khi luồng nền đang ghi."
+
+[[term]]
+term = "DAG"
+full = "Directed Acyclic Graph"
+group = "CS & phần mềm"
+vi = "Đồ thị có hướng không chu trình: các bước nối với nhau theo một chiều, không vòng lại. Dùng để mô tả luồng công việc phụ thuộc nhau."
+example = "Pipeline dữ liệu trong Airflow là một DAG."
+
+[[term]]
+term = "TTL"
+full = "Time To Live"
+group = "CS & phần mềm"
+vi = "Thời gian sống: sau khoảng này dữ liệu (cache, bản ghi DNS) hết hạn và bị bỏ."
+example = "Cache có TTL 5 phút."
+
+[[term]]
+term = "Async"
+full = "Asynchronous programming"
+group = "CS & phần mềm"
+vi = "Lập trình bất đồng bộ: trong lúc chờ mạng hay file, chương trình làm việc khác thay vì đứng chờ."
+example = "NeuralRadar dùng asyncio để gọi nhiều nguồn cùng lúc."
+aliases = ["asyncio", "async/await"]
+
+[[term]]
+term = "Rate limit"
+full = "Rate limit"
+group = "CS & phần mềm"
+vi = "Giới hạn số yêu cầu được gửi tới một API trong một khoảng thời gian; vượt quá sẽ bị từ chối (lỗi 429 hoặc 403)."
+example = "GitHub search không token chỉ cho 10 yêu cầu mỗi phút."
+aliases = ["rate limiting", "429"]
+
+[[term]]
+term = "OAuth"
+full = "Open Authorization"
+group = "CS & phần mềm"
+vi = "Chuẩn cho phép ứng dụng truy cập tài khoản của bạn ở dịch vụ khác mà không cần biết mật khẩu, qua màn hình 'Cho phép truy cập'."
+example = "Đăng nhập bằng Google dùng OAuth."
+
+[[term]]
+term = "RSS"
+full = "Really Simple Syndication"
+group = "CS & phần mềm"
+vi = "Định dạng 'bảng tin' của trang web để phần mềm theo dõi bài mới mà không phải mở trang."
+example = "NeuralRadar đọc RSS của blog HuggingFace và DeepMind."
+
+[[term]]
+term = "URL"
+full = "Uniform Resource Locator"
+group = "CS & phần mềm"
+vi = "Địa chỉ của một tài nguyên trên mạng, như địa chỉ một trang web."
+example = "Thanh địa chỉ của trình duyệt hiện URL của trang đang mở."
+common = true
+
+[[term]]
+term = "IDE"
+full = "Integrated Development Environment"
+group = "CS & phần mềm"
+vi = "Môi trường phát triển tích hợp: phần mềm soạn code có sẵn gợi ý, debug, chạy test."
+example = "VS Code và PyCharm là IDE."
+
+common = true

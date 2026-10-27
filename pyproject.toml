@@ -45,7 +45,7 @@ build-backend = "setuptools.build_meta"
 include = ["app*"]
 
 [tool.setuptools.package-data]
-app = ["pipeline/prompts/*.txt"]
+app = ["pipeline/prompts/*.txt", "glossary/*.toml"]
 
 [tool.ruff]
 line-length = 100

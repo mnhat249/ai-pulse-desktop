@@ -48,7 +48,13 @@ def main() -> int:
     tray = Tray(commands, is_paused=lambda: bool(widget_box and widget_box[0].paused))
     widget = FloatingWidget(
         settings,
-        UIModel(reader, settings.ui.max_clusters_shown),
+        UIModel(
+            reader,
+            settings.ui.max_clusters_shown,
+            settings.ui.page_size,
+            rules=settings.topics.resolved_rules(),
+            enabled_topics=settings.topics.enabled_keys(),
+        ),
         backend,
         events,
         commands,

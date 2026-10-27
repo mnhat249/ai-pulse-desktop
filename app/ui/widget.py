@@ -2,31 +2,49 @@ from __future__ import annotations
 
 import logging
 import queue
+import sqlite3
+import threading
 import webbrowser
 from pathlib import Path
-from typing import Protocol
+from typing import Any, Protocol
 
 import customtkinter as ctk
 
+from app import glossary
 from app.config import Settings, app_home
 from app.core import sources
-from app.storage.ui_queries import ClusterView, SourceStatusView, source_label
+from app.storage import ui_queries
+from app.storage.ui_queries import (
+    ClusterDetails,
+    ClusterFilter,
+    ClusterView,
+    SourceStatusView,
+    source_label,
+)
 from app.ui import theme
 from app.ui import tray as tray_commands
 from app.ui.backend import UIEvent
+from app.ui.glossary_view import GlossaryView
 from app.ui.model import FILTER_LABELS, UIModel
 from app.ui.notifier import Notifier
 from app.ui.settings_window import SettingsWindow
 from app.ui.state import WindowState, load_state, save_state
 from app.ui.tray import Tray
+from app.ui.wrapping import Wrapper
 
 logger = logging.getLogger(__name__)
 
 POLL_MS = 500
 SAVE_DEBOUNCE_MS = 600
-WRAP = 318
+TEXT_MARGIN = 44  # đệm của thẻ (lề, dải tín hiệu) tính từ mép khung cuộn tới chữ
+WINDOW_CHROME = 46  # lề tab + lề khung cuộn + thanh cuộn, tính từ mép cửa sổ
+NEWS_TAB = "Tin tức"
+GLOSSARY_TAB = "Thuật ngữ"
 STRIP_WIDTH = 6
 CARD_RADIUS = 6
+
+FilterKey = tuple[ClusterFilter, str | None, str, int]
+FeedKey = tuple[tuple[int, ...], ClusterFilter, str | None, str, int]
 
 
 class Controller(Protocol):
@@ -47,6 +65,14 @@ def open_link(url: str | None) -> bool:
     return False
 
 
+def open_link_in_thread(url: str | None) -> bool:
+    """Như `open_link` nhưng `webbrowser.open` chạy ở luồng riêng để giao diện không đứng."""
+    if url and url.startswith(("http://", "https://")):
+        threading.Thread(target=webbrowser.open, args=(url,), daemon=True).start()
+        return True
+    return False
+
+
 class FloatingWidget(ctk.CTk):  # type: ignore[misc]
     """Widget nổi. Không gọi mạng, không chờ I/O dài: chỉ đọc DB nhanh bằng kết nối riêng."""
 
@@ -61,8 +87,10 @@ class FloatingWidget(ctk.CTk):  # type: ignore[misc]
         state_path: Path,
         tray: Tray | None = None,
         settings_path: Path | None = None,
+        terms: tuple[glossary.Term, ...] | None = None,
     ) -> None:
         super().__init__()
+        self._terms = glossary.load_terms() if terms is None else terms
         self._settings_path = settings_path or app_home() / "settings.toml"
         self._settings = settings
         self._model = model
@@ -77,6 +105,9 @@ class FloatingWidget(ctk.CTk):  # type: ignore[misc]
         self._closed = False
         self._save_job: str | None = None
         self.quit_requested = False
+        self._cards: dict[int, ctk.CTkFrame] = {}
+        self._views: dict[int, ClusterView] = {}
+        self._shown: FeedKey | None = None
         self._state = load_state(state_path, settings.ui.always_on_top)
 
         ctk.set_appearance_mode("light")
@@ -85,18 +116,20 @@ class FloatingWidget(ctk.CTk):  # type: ignore[misc]
         self.minsize(320, 300)
         self.geometry(self._state.geometry)
         self.attributes("-topmost", self._state.always_on_top)
-        self.attributes("-alpha", 0.97)
         display = theme.pick_family(theme.DISPLAY_FONTS)
         body = theme.pick_family(theme.BODY_FONTS)
         self._fonts = {
             "title": ctk.CTkFont(family=display, size=20),
-            "card_title": ctk.CTkFont(family=body, size=14, weight="bold"),
-            "card_title_read": ctk.CTkFont(family=body, size=14),
-            "body": ctk.CTkFont(family=body, size=13),
-            "lead": ctk.CTkFont(family=display, size=12),
-            "small": ctk.CTkFont(family=body, size=11),
+            "card_title": ctk.CTkFont(family=body, size=18, weight="bold"),
+            "card_title_read": ctk.CTkFont(family=body, size=18),
+            "body": ctk.CTkFont(family=body, size=14),
+            "lead": ctk.CTkFont(family=display, size=13),
+            "small": ctk.CTkFont(family=body, size=12),
             "chip": ctk.CTkFont(family=body, size=11, weight="bold"),
+            "term": ctk.CTkFont(family=display, size=20),
+            "tab": ctk.CTkFont(family=body, size=15, weight="bold"),
         }
+        self._model.set_topic_label(self._state.topic or self._model.topic)
         self._build()
         self.bind("<Configure>", self._on_configure)
         self.protocol("WM_DELETE_WINDOW", self._on_close)
@@ -154,12 +187,34 @@ class FloatingWidget(ctk.CTk):  # type: ignore[misc]
             side="right"
         )
 
-        filters = ctk.CTkFrame(self, fg_color="transparent")
-        filters.pack(fill="x", padx=12, pady=6)
-        self._filter_button = ctk.CTkSegmentedButton(
-            filters,
-            values=list(FILTER_LABELS),
-            command=self._on_filter,
+        self._tabs = ctk.CTkTabview(
+            self,
+            fg_color=theme.BG,
+            border_width=0,
+            corner_radius=0,
+            segmented_button_fg_color=theme.CARD,
+            segmented_button_selected_color=theme.SELECTED,
+            segmented_button_selected_hover_color=theme.SELECTED,
+            segmented_button_unselected_color=theme.CARD,
+            segmented_button_unselected_hover_color=theme.TRACK,
+            text_color=theme.INK,
+            command=self._on_tab,
+        )
+        self._tabs.pack(fill="both", expand=True, padx=4, pady=(0, 4))
+        self._tabs._segmented_button.configure(font=self._fonts["tab"], height=32)
+        news = self._tabs.add(NEWS_TAB)
+        words = self._tabs.add(GLOSSARY_TAB)
+        self._build_news(news)
+        initial = self._state.width - WINDOW_CHROME
+        self.glossary = GlossaryView(words, self._terms, self._fonts, initial)
+        self.glossary.pack(fill="both", expand=True)
+        self._update_top_button()
+
+    def _segmented(self, parent: ctk.CTkFrame, values: list[str], command: object) -> Any:
+        return ctk.CTkSegmentedButton(
+            parent,
+            values=values,
+            command=command,
             font=self._fonts["body"],
             fg_color=theme.CARD,
             selected_color=theme.SELECTED,
@@ -169,6 +224,11 @@ class FloatingWidget(ctk.CTk):  # type: ignore[misc]
             text_color=theme.INK,
             text_color_disabled=theme.MUTED,
         )
+
+    def _build_news(self, tab: ctk.CTkFrame) -> None:
+        filters = ctk.CTkFrame(tab, fg_color="transparent")
+        filters.pack(fill="x", padx=4, pady=(0, 4))
+        self._filter_button = self._segmented(filters, list(FILTER_LABELS), self._on_filter)
         self._filter_button.set("Tất cả")
         self._filter_button.pack(side="left")
         self._source_menu = ctk.CTkOptionMenu(
@@ -187,13 +247,34 @@ class FloatingWidget(ctk.CTk):  # type: ignore[misc]
         )
         self._source_menu.pack(side="right")
 
+        self._topic_bar = self._segmented(tab, self._model.topic_choices(), self._on_topic)
+        self._topic_bar.set(self._model.topic)
+        self._topic_bar.pack(fill="x", padx=4, pady=(0, 4))
+
         self._status_label = ctk.CTkLabel(
-            self, text="", font=self._fonts["small"], text_color=theme.MUTED, anchor="w", height=14
+            tab, text="", font=self._fonts["small"], text_color=theme.MUTED, anchor="w", height=14
         )
-        self._status_label.pack(fill="x", padx=14)
-        self._feed = ctk.CTkScrollableFrame(self, fg_color="transparent")
-        self._feed.pack(fill="both", expand=True, padx=6, pady=(2, 8))
-        self._update_top_button()
+        self._status_label.pack(fill="x", padx=8)
+
+        pager = ctk.CTkFrame(tab, fg_color="transparent")
+        pager.pack(side="bottom", fill="x", padx=4, pady=(2, 0))
+        self._prev_button = self._button(pager, "‹ Trước", self.prev_page, filled=False)
+        self._prev_button.pack(side="left")
+        self._next_button = self._button(pager, "Sau ›", self.next_page, filled=False)
+        self._next_button.pack(side="right")
+        self._page_label = ctk.CTkLabel(
+            pager, text="", font=self._fonts["body"], text_color=theme.MUTED
+        )
+        self._page_label.pack(side="left", expand=True)
+
+        self._feed = ctk.CTkScrollableFrame(tab, fg_color="transparent")
+        self._feed.pack(fill="both", expand=True, pady=(2, 2))
+        self._wrap = Wrapper(
+            self._feed._parent_canvas,
+            TEXT_MARGIN,
+            self._state.width - WINDOW_CHROME - TEXT_MARGIN,
+            scaled_by=self._feed,
+        )
 
     def _update_top_button(self) -> None:
         self._top_button.configure(text="Ghim ✓" if self._state.always_on_top else "Ghim")
@@ -250,7 +331,7 @@ class FloatingWidget(ctk.CTk):  # type: ignore[misc]
             return
         if not self._paused:
             self._status_label.configure(text="")
-        self.refresh()
+        self.sync()
         self._toast(dict.fromkeys(changed))
 
     def _toast(self, cluster_ids: dict[int, None]) -> None:
@@ -298,10 +379,41 @@ class FloatingWidget(ctk.CTk):  # type: ignore[misc]
         self._model.set_source_label(label)
         self.refresh()
 
+    def _on_topic(self, label: str) -> None:
+        self._model.set_topic_label(label)
+        self._topic_bar.set(self._model.topic)
+        self._state.topic = self._model.topic
+        self._save_now()
+        self.refresh()
+
+    def next_page(self) -> None:
+        if self._model.next_page():
+            self._show_page()
+
+    def prev_page(self) -> None:
+        if self._model.prev_page():
+            self._show_page()
+
+    def _show_page(self) -> None:
+        self.refresh()
+        self._feed._parent_canvas.yview_moveto(0)
+
+    def _on_tab(self) -> None:
+        if self._tabs.get() == GLOSSARY_TAB:
+            self.glossary.focus_search()
+
+    def show_term(self, term: str) -> None:
+        """Bấm chip thuật ngữ trên thẻ tin: sang tab Thuật ngữ, mở đúng thuật ngữ đó."""
+        self._tabs.set(GLOSSARY_TAB)
+        self.glossary.show_term(term)
+
     def open_cluster_link(self, cluster: ClusterView) -> None:
-        if open_link(cluster.primary_url):
-            if not cluster.read:
-                self._controller.mark_read(cluster.id)
+        self.open_url(cluster, cluster.primary_url or (cluster.urls[0] if cluster.urls else None))
+
+    def open_url(self, cluster: ClusterView, url: str | None) -> None:
+        """Mở link ở luồng riêng rồi đánh dấu đã đọc (chỉ thẻ này được dựng lại khi sự kiện về)."""
+        if open_link_in_thread(url) and not cluster.read:
+            self._controller.mark_read(cluster.id)
 
     def toggle_read(self, cluster: ClusterView) -> None:
         self._controller.mark_read(cluster.id, not cluster.read)
@@ -311,16 +423,67 @@ class FloatingWidget(ctk.CTk):  # type: ignore[misc]
 
     def toggle_card(self, cluster_id: int) -> None:
         self._model.toggle_expanded(cluster_id)
-        self.refresh()
+        view = self._views.get(cluster_id)
+        if view is None or self._shown is None or self._shown[1:] != self._filter_key():
+            self.refresh()
+            return
+        self._rebuild_card(view)
 
     # ---- hiển thị -------------------------------------------------------------------------
+    def _filter_key(self) -> FilterKey:
+        return self._model.view, self._model.source, self._model.topic, self._model.page
+
+    def _feed_key(self, clusters: list[ClusterView]) -> FeedKey:
+        return (tuple(c.id for c in clusters), *self._filter_key())
+
     def refresh(self) -> None:
-        for child in self._feed.winfo_children():
-            child.destroy()
+        """Dựng lại toàn bộ danh sách thẻ, giữ nguyên vị trí cuộn."""
         clusters = self._model.clusters()
+        self._update_header()
+        top = self._feed._parent_canvas.yview()[0]
+        self._rebuild_feed(clusters)
+        if top > 0:
+            self.update_idletasks()
+            self._feed._parent_canvas.yview_moveto(top)
+
+    def sync(self) -> None:
+        """Đọc lại DB; danh sách id hay bộ lọc đổi mới dựng lại hết, không thì chỉ thẻ đổi."""
+        clusters = self._model.clusters()
+        self._update_header()
+        if self._feed_key(clusters) != self._shown:
+            self._rebuild_feed(clusters)
+            return
+        for cluster in clusters:
+            if cluster != self._views[cluster.id]:
+                self._rebuild_card(cluster)
+
+    def _update_header(self) -> None:
         unread = self._model.unread_count()
         self._unread_label.configure(text=f"{unread} tin chưa đọc" if unread else "Đã đọc hết")
         self._source_menu.configure(values=self._model.source_choices())
+        self._update_pager()
+
+    def _update_pager(self) -> None:
+        page, pages = self._model.page + 1, self._model.page_count()
+        self._page_label.configure(text=f"Trang {page}/{pages}")
+        self._prev_button.configure(state="normal" if page > 1 else "disabled")
+        self._next_button.configure(state="normal" if page < pages else "disabled")
+
+    def _rebuild_card(self, cluster: ClusterView) -> None:
+        """Dựng thẻ mới ngay trước thẻ cũ rồi mới hủy thẻ cũ, nên thứ tự giữ nguyên."""
+        old = self._cards[cluster.id]
+        self._cards[cluster.id] = self._add_card(cluster, before=old)
+        self._views[cluster.id] = cluster
+        old.destroy()
+        self._wrap.forget_dead()
+
+    def _rebuild_feed(self, clusters: list[ClusterView]) -> None:
+        for child in self._feed.winfo_children():
+            child.destroy()
+        self._wrap.forget_dead()
+        self._cards.clear()
+        self._views.clear()
+        self._shown = self._feed_key(clusters)
         if not clusters:
             ctk.CTkLabel(
                 self._feed,
@@ -330,7 +493,8 @@ class FloatingWidget(ctk.CTk):  # type: ignore[misc]
                 justify="left",
             ).pack(pady=24, padx=8, anchor="w")
         for cluster in clusters:
-            self._add_card(cluster)
+            self._cards[cluster.id] = self._add_card(cluster)
+            self._views[cluster.id] = cluster
 
     def _signal_strip(self, parent: ctk.CTkFrame, cluster: ClusterView) -> None:
         """Dải tín hiệu: chiều cao lấp đầy theo điểm quan trọng; đã đọc thì chỉ còn màu mờ."""
@@ -349,18 +513,37 @@ class FloatingWidget(ctk.CTk):  # type: ignore[misc]
             anchor="sw",
         )
 
-    def _chip(self, parent: ctk.CTkFrame, text: str, color: str) -> None:
+    def _chip(
+        self, parent: ctk.CTkFrame, text: str, color: str, text_color: str = "#FFFFFF"
+    ) -> None:
         ctk.CTkLabel(
             parent,
             text=text,
             font=self._fonts["chip"],
-            text_color="#FFFFFF",
+            text_color=text_color,
             fg_color=color,
             corner_radius=4,
             height=18,
         ).pack(side="left", padx=(0, 4))
 
-    def _add_card(self, cluster: ClusterView) -> None:
+    def _topic_labels(self, cluster: ClusterView) -> list[str]:
+        labels = {rule.key: rule.label for rule in self._model.rules}
+        return [labels[key] for key in cluster.topics if key in labels]
+
+    def _terms_of(self, cluster: ClusterView) -> tuple[glossary.Term, ...]:
+        text = "\n".join(
+            part or ""
+            for part in (
+                cluster.title,
+                cluster.original_title,
+                cluster.lead_text,
+                cluster.innovation,
+                cluster.impact,
+            )
+        )
+        return glossary.find_terms(text, self._terms)
+
+    def _add_card(self, cluster: ClusterView, before: ctk.CTkFrame | None = None) -> ctk.CTkFrame:
         expanded = cluster.id in self._model.expanded
         card = ctk.CTkFrame(
             self._feed,
@@ -369,27 +552,52 @@ class FloatingWidget(ctk.CTk):  # type: ignore[misc]
             border_width=1,
             border_color=theme.BORDER,
         )
-        card.pack(fill="x", pady=3, padx=6)
+        card.pack(fill="x", pady=4, padx=6, before=before)
         self._signal_strip(card, cluster)
         body = ctk.CTkFrame(card, fg_color="transparent")
-        body.pack(side="left", fill="both", expand=True, padx=(8, 10), pady=8)
+        body.pack(side="left", fill="both", expand=True, padx=(8, 10), pady=10)
 
         star = "  ★" if cluster.bookmarked else ""
-        title = ctk.CTkLabel(
+        title = self._wrap.label(
             body,
             text=f"{cluster.title}{star}",
-            wraplength=WRAP,
             anchor="w",
             justify="left",
             font=self._fonts["card_title_read" if cluster.read else "card_title"],
             text_color=theme.MUTED if cluster.read else theme.INK,
         )
         title.pack(fill="x")
+        clickable: list[ctk.CTkBaseClass] = [card, body, title]
+        if cluster.summarized and cluster.original_title.strip() != cluster.title.strip():
+            original = self._wrap.label(
+                body,
+                text=cluster.original_title,
+                anchor="w",
+                justify="left",
+                font=self._fonts["small"],
+                text_color=theme.MUTED,
+            )
+            original.pack(fill="x", pady=(2, 0))
+            clickable.append(original)
+        if cluster.lead_text:
+            lead = self._wrap.label(
+                body,
+                height=0,
+                text=cluster.lead_text,
+                anchor="w",
+                justify="left",
+                font=self._fonts["body"],
+                text_color=theme.MUTED if cluster.read else theme.INK,
+            )
+            lead.pack(fill="x", pady=(6, 0))
+            clickable.append(lead)
 
         meta = ctk.CTkFrame(body, fg_color="transparent")
-        meta.pack(fill="x", pady=(4, 0))
+        meta.pack(fill="x", pady=(8, 0))
         for source in cluster.sources:
             self._chip(meta, source_label(source), theme.source_color(source))
+        for label in self._topic_labels(cluster):
+            self._chip(meta, label, theme.SELECTED, theme.INK)
         if not cluster.summarized:
             self._chip(meta, "Chờ tóm tắt", theme.MUTED)
         ctk.CTkLabel(
@@ -398,12 +606,113 @@ class FloatingWidget(ctk.CTk):  # type: ignore[misc]
             font=self._fonts["small"],
             text_color=theme.MUTED,
         ).pack(side="right")
-
-        for widget in (card, body, title, meta):
-            widget.bind("<Button-1>", lambda _e, cid=cluster.id: self.toggle_card(cid))
         if not expanded:
-            return
+            ctk.CTkButton(
+                meta,
+                text="↗",
+                command=lambda c=cluster: self.open_cluster_link(c),
+                font=self._fonts["body"],
+                width=26,
+                height=18,
+                corner_radius=4,
+                fg_color="transparent",
+                hover_color=theme.TRACK,
+                text_color=theme.INK,
+                border_width=1,
+                border_color=theme.BORDER,
+            ).pack(side="right", padx=(0, 6))
+        clickable.append(meta)
+        self._add_term_chips(body, cluster)
 
+        for widget in clickable:
+            widget.bind("<Button-1>", lambda _e, cid=cluster.id: self.toggle_card(cid))
+        if expanded:
+            self._add_details(body, cluster)
+        return card
+
+    def _add_term_chips(self, body: ctk.CTkFrame, cluster: ClusterView) -> None:
+        """Chip "Thuật ngữ": bấm để mở giải thích ở tab Thuật ngữ."""
+        terms = self._terms_of(cluster)
+        if not terms:
+            return
+        row = ctk.CTkFrame(body, fg_color="transparent")
+        row.pack(fill="x", pady=(6, 0))
+        ctk.CTkLabel(
+            row, text="Thuật ngữ:", font=self._fonts["small"], text_color=theme.MUTED
+        ).pack(side="left", padx=(0, 4))
+        for term in terms:
+            ctk.CTkButton(
+                row,
+                text=term.term,
+                command=lambda name=term.term: self.show_term(name),
+                font=self._fonts["chip"],
+                width=20,
+                height=20,
+                corner_radius=10,
+                fg_color="transparent",
+                hover_color=theme.TRACK,
+                text_color=theme.LINK,
+                border_width=1,
+                border_color=theme.BORDER,
+            ).pack(side="left", padx=(0, 4))
+
+    def _details_of(self, cluster_id: int) -> ClusterDetails | None:
+        try:
+            return ui_queries.cluster_details(self._model.reader, cluster_id)
+        except sqlite3.Error:
+            logger.exception("Không đọc được chi tiết cụm %s", cluster_id)
+            return None
+
+    def _lead(self, body: ctk.CTkFrame, text: str) -> None:
+        ctk.CTkLabel(
+            body,
+            text=text,
+            font=self._fonts["lead"],
+            text_color=theme.MUTED,
+            anchor="w",
+            height=16,
+        ).pack(fill="x", pady=(8, 0))
+
+    def _paragraph(self, body: ctk.CTkFrame, text: str, color: str = theme.INK) -> None:
+        self._wrap.label(
+            body,
+            height=0,
+            text=text,
+            font=self._fonts["body"],
+            text_color=color,
+            anchor="w",
+            justify="left",
+        ).pack(fill="x")
+
+    def _add_sources(
+        self, body: ctk.CTkFrame, cluster: ClusterView, details: ClusterDetails
+    ) -> None:
+        self._lead(body, "Nguồn")
+        for item in details.items:
+            row = self._wrap.label(
+                body,
+                height=0,
+                text=f"{item.label} · {item.title}",
+                font=self._fonts["body"],
+                text_color=theme.LINK,
+                anchor="w",
+                justify="left",
+                cursor="hand2",
+            )
+            row.pack(fill="x", pady=1)
+            row.bind("<Button-1>", lambda _e, c=cluster, u=item.url: self.open_url(c, u))
+
+    def _add_details(self, body: ctk.CTkFrame, cluster: ClusterView) -> None:
+        details = self._details_of(cluster.id)
+        if not cluster.summarized:
+            self._paragraph(
+                body,
+                "Chưa có tóm tắt tiếng Việt: lưu khóa bằng python -m app.setkey gemini",
+                theme.MUTED,
+            )
+            if details is not None and details.excerpt and not cluster.lead_text:
+                self._lead(body, "Nội dung gốc")
+                self._paragraph(body, details.excerpt)
         if cluster.summarized:
             for lead, text in (("Cái mới", cluster.innovation), ("Dùng để", cluster.impact)):
                 row = ctk.CTkFrame(body, fg_color="transparent")
@@ -416,16 +725,17 @@ class FloatingWidget(ctk.CTk):  # type: ignore[misc]
                     anchor="w",
                     height=16,
                 ).pack(fill="x")
-                ctk.CTkLabel(
+                self._wrap.label(
                     row,
                     height=0,
                     text=text or "",
                     font=self._fonts["body"],
                     text_color=theme.INK,
-                    wraplength=WRAP,
                     anchor="w",
                     justify="left",
                 ).pack(fill="x")
+        if details is not None and details.items:
+            self._add_sources(body, cluster, details)
         ctk.CTkLabel(
             body,
             text=f"Quan trọng {cluster.importance:.0f}/100",
@@ -535,6 +845,7 @@ class FloatingWidget(ctk.CTk):  # type: ignore[misc]
             width=round(self.winfo_width() / self._get_window_scaling()),
             height=round(self.winfo_height() / self._get_window_scaling()),
             always_on_top=self._state.always_on_top,
+            topic=self._state.topic,
         )
         save_state(self._state_path, self._state)
 

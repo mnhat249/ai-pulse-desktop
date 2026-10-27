@@ -2,7 +2,8 @@ Bạn là biên tập viên tin công nghệ AI. Dưới đây là một lô s�
 
 Với MỖI sự kiện, hãy trả về:
 - cluster_id: đúng số trong thẻ.
-- title_vi: tiêu đề tiếng Việt ngắn gọn, tối đa 12 từ.
+- title_vi: tiêu đề tiếng Việt dịch đủ ý tiêu đề gốc; không lược bớt chữ, không kết thúc bằng dấu ba chấm.
+- intro: đoạn giới thiệu 2 đến 3 câu tiếng Việt: ai làm, giải quyết vấn đề gì, vì sao đáng chú ý.
 - innovation: ý 1, cái gì mới (1 câu tiếng Việt đơn giản).
 - impact: ý 2, dùng để làm gì hoặc ai hưởng lợi (1 câu tiếng Việt đơn giản).
 - importance: số nguyên 1 đến 5 (5 là rất quan trọng với người theo dõi AI).
@@ -13,6 +14,6 @@ Quy tắc:
 - Giữ nguyên tên riêng và thuật ngữ kỹ thuật (tên model, thư viện, công ty).
 - Tuyệt đối KHÔNG viết đường dẫn, URL hay địa chỉ web vào bất kỳ trường nào.
 - Không bịa thông tin ngoài nội dung đã cho.
-- Chỉ trả về JSON hợp lệ, đúng dạng: {"items": [{"cluster_id": 1, "title_vi": "...", "innovation": "...", "impact": "...", "importance": 3, "is_noise": false, "noise_reason": null}]}
+- Chỉ trả về JSON hợp lệ, đúng dạng: {"items": [{"cluster_id": 1, "title_vi": "...", "intro": "...", "innovation": "...", "impact": "...", "importance": 3, "is_noise": false, "noise_reason": null}]}
 
 {su_kien}

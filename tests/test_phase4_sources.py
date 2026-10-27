@@ -162,7 +162,8 @@ async def test_bluesky_keeps_only_ai_posts_with_correct_fields() -> None:
         assert it.source == "bluesky" and it.author == "simonwillison.net"
         assert re.fullmatch(r"https://bsky\.app/profile/simonwillison\.net/post/\w+", it.url)
         assert it.metrics["likes"] >= 0 and it.published_at.tzinfo is not None
-        assert it.title and len(it.title) <= 110
+        assert it.title and len(it.title) <= 300
+        assert not it.title.endswith(("...", "…"))  # chữ link rút gọn bị bỏ
 
 
 async def test_bluesky_reposts_are_skipped() -> None:
@@ -208,13 +209,45 @@ def test_bluesky_post_with_external_link_embed() -> None:
     assert result.metrics == {"likes": 7.0, "reposts": 0.0, "replies": 0.0}
 
 
-def test_bluesky_long_first_line_is_truncated_for_the_title() -> None:
+def _post_with_link(text: str, link_text: str) -> dict[str, object]:
+    start = text.encode("utf-8").index(link_text.encode("utf-8"))
+    return {
+        "uri": "at://did:plc:x/app.bsky.feed.post/3kl",
+        "author": {"handle": "a.example"},
+        "record": {
+            "text": text,
+            "createdAt": "2026-10-23T10:00:00Z",
+            "facets": [
+                {
+                    "index": {"byteStart": start, "byteEnd": start + len(link_text.encode())},
+                    "features": [
+                        {"$type": "app.bsky.richtext.facet#link", "uri": "https://a.example/x"}
+                    ],
+                }
+            ],
+        },
+    }
+
+
+def test_bluesky_title_drops_shortened_link_text() -> None:
+    mid = _post_with_link("New tool a.example/x... is great", "a.example/x...")
+    assert build_post(mid).title == "New tool is great"  # không còn hai dấu cách liền nhau
+    # chữ nhiều byte (tiếng Việt, emoji) đứng trước link: offset tính theo byte UTF-8
+    viet = _post_with_link("Công cụ mới 🚀 cho LLM a.example/x...", "a.example/x...")
+    assert build_post(viet).title == "Công cụ mới 🚀 cho LLM"
+    only = _post_with_link("a.example/x...", "a.example/x...")
+    assert build_post(only).title == "a.example/x..."  # bài chỉ có link: không để tiêu đề rỗng
+
+
+def test_bluesky_long_first_line_is_kept_whole_for_the_title() -> None:
+    line = "word " * 59 + "end"
     post = {
         "uri": "at://did:plc:x/app.bsky.feed.post/3k1",
         "author": {"handle": "a.example"},
-        "record": {"text": "x" * 300, "createdAt": "2026-10-23T10:00:00Z"},
+        "record": {"text": f"{line}\nsecond line", "createdAt": "2026-10-23T10:00:00Z"},
     }
-    assert len(build_post(post).title) == 110 and build_post(post).title.endswith("…")
+    title = build_post(post).title
+    assert title == line and not title.endswith("…")
 
 
 # ---- cài đặt: bật/tắt nguồn và thêm feed -------------------------------------------------
